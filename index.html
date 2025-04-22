@@ -42,6 +42,44 @@
       color: #00c2ff;
     }
 
+  .menu-toggle {
+    display: none;
+    font-size: 2rem;
+    color: #f0f0f0;
+    cursor: pointer;
+  }
+  
+  .nav-links {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+  }
+  
+  /* Responsive menu */
+  @media (max-width: 768px) {
+    .menu-toggle {
+      display: block;
+      text-align: center;
+      margin: 0 auto;
+    }
+  
+    .nav-links {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      background-color: #141414;
+      padding: 1rem 0;
+    }
+  
+    .nav-links.active {
+      display: flex;
+    }
+  
+    nav a {
+      margin: 0.5rem 0;
+    }
+  }
+
     main {
       max-width: 900px;
       margin: 2rem auto;
@@ -87,9 +125,12 @@
   </header>
 
   <nav>
-    <a href="#blog">Blog</a>
-    <a href="#art">Art Gallery</a>
-    <a href="#contact">Contact</a>
+    <div class="menu-toggle" id="menu-toggle">&#9776;</div>
+    <div class="nav-links" id="nav-links">
+      <a href="#blog">Blog</a>
+      <a href="#art">Art Gallery</a>
+      <a href="#contact">Contact</a>
+    </div>
   </nav>
 
   <main>
