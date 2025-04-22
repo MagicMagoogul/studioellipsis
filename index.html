@@ -58,17 +58,19 @@
       margin-bottom: 1rem;
     }
 
-    .gallery img {
-      width: 100%;
-      max-width: 300px;
-      margin: 0.5rem;
-      border-radius: 8px;
-      transition: transform 0.3s;
-    }
+  .gallery {
+    display: flex;
+    gap: 1rem; /* adds spacing between images */
+    flex-wrap: wrap; /* optional: wraps to next line on small screens */
+    justify-content: center; /* center images horizontally */
+  }
+  
+  .gallery img {
+    width: 200px; /* or whatever size you prefer */
+    border-radius: 8px;
+    transition: transform 0.3s;
+  }
 
-    .gallery img:hover {
-      transform: scale(1.05);
-    }
 
     footer {
       text-align: center;
