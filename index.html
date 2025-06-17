@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STUDIO ELLIPSIS</title>
   <style>
+    
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #0e0e0e;
-      color: #f0f0f0;
+      background-color: #fdf6e3; /* changed from #0e0e0e to cream */
+      color: #0e0e0e; /* optional: make text darker for contrast */
     }
 
     header {
@@ -129,7 +130,8 @@
     <div class="nav-links" id="nav-links">
       <a href="#blog">Blog</a>
       <a href="#art">Art Gallery</a>
-      <a href="#contact">Contact</a>
+      <a href=#animations>Animation Portfolio</a>
+      
     </div>
   </nav>
 
@@ -151,21 +153,15 @@
       </div>
     </section>
 
-    <section id="contact">
-      <h2>Contact Me</h2>
-      <form id="contactForm">
-        <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name" required><br><br>
-
-        <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
-
-        <label for="message">Message:</label><br>
-        <textarea id="message" name="message" rows="5" required></textarea><br><br>
-
-        <button type="submit">Send</button>
-      </form>
+    <section id="animations">
+      <h2>Animation Portfolio</h2>
+      <div class="animation">
+          <img src="" alt="Animation 1">
+          <img src="" alt="Animation 2">
+          <img src="" alt="Animation 3">
+      </div>
     </section>
+    
   </main>
 
   <footer>
