@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STUDIO ELLIPSIS</title>
+  <style>
+    
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #fdf6e3; /* changed from #0e0e0e to cream */
+      color: #0e0e0e; /* optional: make text darker for contrast */
+    }
+
+    header {
+      background-color: #fdf6e3;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      background-color: #0e0e0e;
+      padding: 1rem 0;
+    }
+
+    nav a {
+      color: #f0f0f0;
+      margin: 0 1.5rem;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      color: #00c2ff;
+    }
+
+  .menu-toggle {
+    display: none;
+    font-size: 2rem;
+    color: #f0f0f0;
+    cursor: pointer;
+  }
+  
+  .nav-links {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+  }
+  
+  /* Responsive menu */
+  @media (max-width: 768px) {
+    .menu-toggle {
+      display: block;
+      text-align: center;
+      margin: 0 auto;
+    }
+  
+    .nav-links {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      background-color: #141414;
+      padding: 1rem 0;
+    }
+  
+    .nav-links.active {
+      display: flex;
+    }
+  
+    nav a {
+      margin: 0.5rem 0;
+    }
+  }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    section {
+      margin-bottom: 3rem;
+    }
+
+    h2 {
+      border-bottom: 2px solid #00c2ff;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+  .gallery {
+    display: flex;
+    gap: 1rem; /* adds spacing between images */
+    flex-wrap: wrap; /* optional: wraps to next line on small screens */
+    justify-content: center; /* center images horizontally */
+  }
+  
+  .gallery img {
+    width: 200px; /* or whatever size you prefer */
+    border-radius: 8px;
+    transition: transform 0.3s;
+  }
+
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      background-color: #1a1a1a;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>STUDIO ELLIPSIS</h1>
+    <p></p>
+  </header>
