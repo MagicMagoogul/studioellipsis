@@ -1,77 +1,73 @@
+<!-- Shared layout for all pages -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Riley Owen — Cybersecurity Projects</title>
+  <title>Riley Owen — Cybersecurity Portfolio</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    .page {
-      position: absolute;
-      top: 0;
-      left: 100%;
-      width: 100%;
-      transition: left 0.5s ease;
+    body {
+      margin: 0;
+      background: black;
+      color: #00ff99;
+      font-family: 'Courier New', Courier, monospace;
+      text-shadow: 0 0 5px #00ff99;
+      opacity: 0;
+      animation: fadeIn 0.5s forwards;
+      overflow-x: hidden;
     }
-
-    .page.active {
-      left: 0;
+    @keyframes fadeIn {
+      to { opacity: 1; }
     }
-
+    .fade-out {
+      animation: fadeOut 0.5s forwards;
+    }
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+    }
+    nav {
+      text-align: center;
+      margin: 1rem 0;
+    }
     nav a {
+      color: #00ff99;
+      margin: 0 1rem;
       cursor: pointer;
+      text-decoration: none;
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+    nav a:hover {
+      transform: scale(1.1);
+      text-shadow: 0 0 10px #00ff99;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid #00ff99;
+      font-size: 0.9rem;
+      position: relative;
+      z-index: 2;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Riley Owen — Cybersecurity Projects</h1>
+    <h1 style="text-align:center;">Riley Owen — Cybersecurity Portfolio</h1>
   </header>
-
   <nav>
-    <a onclick="showPage('home')">Home</a>
-    <a onclick="showPage('projects')">Projects</a>
-    <a onclick="showPage('writeups')">Writeups</a>
-    <a onclick="showPage('contact')">Contact</a>
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="projects.html" class="nav-link">Projects</a>
+    <a href="writeups.html" class="nav-link">Writeups</a>
+    <a href="contact.html" class="nav-link">Contact</a>
   </nav>
 
   <main>
-    <div id="home" class="page active">
-      <section>
-        <h2>Welcome</h2>
-        <p>This is the home page for Riley Owen's Cybersecurity Portfolio.</p>
-      </section>
-    </div>
-
-    <div id="projects" class="page">
-      <section>
-        <h2>Projects</h2>
-        <ul class="project-list">
-          <li>🔹 Malware Analysis Toolkit</li>
-          <li>🔹 CTF Challenge Writeups</li>
-          <li>🔹 Custom Firewall Scripts</li>
-          <li>🔹 Security Automation Tools</li>
-        </ul>
-      </section>
-    </div>
-
-    <div id="writeups" class="page">
-      <section>
-        <h2>Writeups</h2>
-        <ul class="project-list">
-          <li>🔹 Windows Privilege Escalation Techniques</li>
-          <li>🔹 Linux Hardening in CCDC</li>
-          <li>🔹 Web Exploitation Case Studies</li>
-        </ul>
-      </section>
-    </div>
-
-    <div id="contact" class="page">
-      <section>
-        <h2>Contact</h2>
-        <p>Email: <a href="mailto:riley@cyberellipsis.com">riley@cyberellipsis.com</a></p>
-      </section>
-    </div>
+    <!-- Page-specific content goes here -->
   </main>
 
   <footer>
@@ -79,12 +75,16 @@
   </footer>
 
   <script>
-    function showPage(pageId) {
-      document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.body.classList.add('fade-out');
+        setTimeout(() => {
+          window.location.href = this.href;
+        }, 500);
       });
-      document.getElementById(pageId).classList.add('active');
-    }
+    });
   </script>
 </body>
 </html>
+
