@@ -1,90 +1,133 @@
-<!-- Shared layout for all pages -->
+<!-- Writeup page for the cybersecurity part of my website, useful to teach people cybersecurity -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cybersecurity Projects</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Riley Owen — Cybersecurity Projects</title>
   <style>
     body {
       margin: 0;
-      background: black;
+      background-color: #000;
       color: #00ff99;
       font-family: 'Courier New', Courier, monospace;
       text-shadow: 0 0 5px #00ff99;
-      opacity: 0;
-      animation: fadeIn 0.5s forwards;
-      overflow-x: hidden;
+      transition: background-color 0.3s, color 0.3s;
     }
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
-    .fade-out {
-      animation: fadeOut 0.5s forwards;
-    }
-    @keyframes fadeOut {
-      to {
-        opacity: 0;
-        transform: translateX(-50px);
-      }
-    }
-    nav {
+
+    header {
       text-align: center;
-      margin: 1rem 0;
+      padding: 2rem;
+      border-bottom: 1px solid #00ff99;
+      animation: fadeIn 1s ease forwards;
     }
+
+    header h1 {
+      margin: 0;
+      font-size: 3rem;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      padding: 1rem;
+      border-bottom: 1px solid #00ff99;
+      animation: fadeIn 1s ease forwards;
+    }
+
     nav a {
       color: #00ff99;
-      margin: 0 1rem;
-      cursor: pointer;
       text-decoration: none;
-      font-weight: bold;
       transition: transform 0.2s;
     }
+
     nav a:hover {
       transform: scale(1.1);
       text-shadow: 0 0 10px #00ff99;
     }
+
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      animation: fadeInUp 1s ease forwards;
+    }
+
+    section {
+      margin-bottom: 3rem;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1s ease forwards;
+      animation-delay: 0.5s;
+      animation-fill-mode: forwards;
+    }
+
+    h2 {
+      border-bottom: 1px solid #00ff99;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .project-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .project-list li {
+      margin-bottom: 1rem;
+      transition: transform 0.3s;
+    }
+
+    .project-list li:hover {
+      transform: translateX(10px);
+      text-shadow: 0 0 10px #00ff99;
+    }
+
     footer {
       text-align: center;
       padding: 2rem;
       border-top: 1px solid #00ff99;
       font-size: 0.9rem;
-      position: relative;
-      z-index: 2;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1 style="text-align:center;">Cybersecurity Projects</h1>
+    <h1>Riley Owen — Cybersecurity Projects</h1>
   </header>
+
   <nav>
     <a href="Cyber_Menu.html" class="nav-link">Home</a>
     <a href="projects.html" class="nav-link">Projects</a>
     <a href="writeups.html" class="nav-link">Writeups</a>
-    <a href="contact.html" class="nav-link">Contact</a>
+    <a href="/Art_Menu.html" class="nav-link">Main Menu</a>
   </nav>
 
   <main>
-    <!-- Page-specific content goes here -->
-    <p>This is the page for my computer science projects!</p>
-  </main>
+    <section id="projects">
+      <h2>Projects</h2>
+      <ul class="project-list">
+        <li> |-- Malware Analysis Toolkit</li>
+        <li> |-- CTF Challenge Writeups</li>
+        <li> |-- Custom Firewall Scripts</li>
+        <li> |-- Security Automation Tools</li>
+      </ul>
+    </section>
 
   <footer>
     &copy; 2025 Riley Owen. All rights reserved.
   </footer>
-
-  <script>
-    document.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        document.body.classList.add('fade-out');
-        setTimeout(() => {
-          window.location.href = this.href;
-        }, 500);
-      });
-    });
-  </script>
 </body>
 </html>
