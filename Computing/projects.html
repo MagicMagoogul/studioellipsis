@@ -1,0 +1,90 @@
+<!-- Shared layout for all pages -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cybersecurity Projects</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: #00ff99;
+      font-family: 'Courier New', Courier, monospace;
+      text-shadow: 0 0 5px #00ff99;
+      opacity: 0;
+      animation: fadeIn 0.5s forwards;
+      overflow-x: hidden;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    .fade-out {
+      animation: fadeOut 0.5s forwards;
+    }
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+    }
+    nav {
+      text-align: center;
+      margin: 1rem 0;
+    }
+    nav a {
+      color: #00ff99;
+      margin: 0 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+    nav a:hover {
+      transform: scale(1.1);
+      text-shadow: 0 0 10px #00ff99;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid #00ff99;
+      font-size: 0.9rem;
+      position: relative;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 style="text-align:center;">Cybersecurity Projects</h1>
+  </header>
+  <nav>
+    <a href="Cyber_Menu.html" class="nav-link">Home</a>
+    <a href="projects.html" class="nav-link">Projects</a>
+    <a href="writeups.html" class="nav-link">Writeups</a>
+    <a href="contact.html" class="nav-link">Contact</a>
+  </nav>
+
+  <main>
+    <!-- Page-specific content goes here -->
+    <p>This is the page for my computer science projects!</p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen. All rights reserved.
+  </footer>
+
+  <script>
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.body.classList.add('fade-out');
+        setTimeout(() => {
+          window.location.href = this.href;
+        }, 500);
+      });
+    });
+  </script>
+</body>
+</html>
