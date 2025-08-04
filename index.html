@@ -2,103 +2,90 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>studioellipsis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Riley Owen</title>
   <style>
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
-      padding: 0;
+      background-color: #000;
+      color: white;
       font-family: 'Helvetica Neue', sans-serif;
-      background-color: #ffffff;
-      color: #1a1a1a;
+      overflow-x: hidden;
     }
 
     header {
-      padding: 4rem 2rem 2rem 2rem;
-      text-align: center;
+      padding: 4rem 2rem 2rem;
+      text-align: left;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
     }
 
     h1 {
-      font-size: 4rem;
-      font-weight: 600;
+      font-size: 5rem;
+      font-weight: 700;
       letter-spacing: 0.1rem;
-      margin: 0;
+      line-height: 1.1;
     }
 
-    p.subtitle {
-      font-size: 1.25rem;
-      margin-top: 0.5rem;
-      color: #666;
+    .subtitle {
+      font-size: 1.5rem;
+      font-weight: 300;
+      margin-top: 1rem;
     }
 
-    main {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
+    .preview {
+      width: 100%;
+      border-radius: 1rem;
+      margin-top: 2rem;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
     }
 
     nav {
-      margin-top: 2rem;
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    a.nav-link {
-      text-decoration: none;
-      padding: 0.75rem 1.5rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-      color: #1a1a1a;
-      transition: all 0.2s ease-in-out;
-    }
-
-    a.nav-link:hover {
-      background-color: #f2f2f2;
-      border-color: #999;
-    }
-
-    .preview-img {
-      margin-top: 2rem;
-      max-width: 800px;
+      position: fixed;
+      bottom: 0;
       width: 100%;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      background-color: #111;
+      display: flex;
+      justify-content: space-around;
+      padding: 1rem 0;
+      border-top: 1px solid #222;
     }
 
-    footer {
-      margin-top: 4rem;
-      padding: 1rem;
-      text-align: center;
-      font-size: 0.9rem;
-      color: #999;
+    nav a {
+      text-decoration: none;
+      color: #aaa;
+      font-size: 1rem;
+      transition: color 0.2s ease;
+    }
+
+    nav a:hover {
+      color: white;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>studioellipsis</h1>
-    <p class="subtitle">Creative Work & Digital Exploration</p>
-  </header>
+  <div class="container">
+    <header>
+      <h1>RILEY OWEN</h1>
+      <p class="subtitle">Digital Artist<br>and Technologist</p>
+      <img class="preview" src="Pictures/your-preview-image.jpg" alt="Preview Image" />
+    </header>
+  </div>
 
-  <main>
-    <img class="preview-img" src="Pictures/your-preview-image.jpg" alt="Homepage Preview"/>
-
-    <nav>
-      <a class="nav-link" href="Art_Menu.html">Art</a>
-      <a class="nav-link" href="Computing/Cyber_Menu.html">Computing</a>
-    </nav>
-  </main>
-
-  <footer>
-    &copy; 2025 Riley Owen — All rights reserved.
-  </footer>
+  <nav>
+    <a href="Art_Menu.html">WORK</a>
+    <a href="#info">INFO</a>
+    <a href="https://instagram.com">INSTAGRAM</a>
+    <a href="#marketplace">MARKETPLACE</a>
+  </nav>
 </body>
 </html>
