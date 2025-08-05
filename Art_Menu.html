@@ -1,4 +1,3 @@
-[media pointer="file-service://file-D6rWhLG1q1J7ZrjcfGdmZi"]
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,35 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STUDIO ELLIPSIS</title>
   <style>
-    
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+    }
+
+    body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #fdf6e3; /* changed from #0e0e0e to cream */
-      color: #0e0e0e; /* optional: make text darker for contrast */
+      background-color: #000;
+      color: #fff;
     }
 
     header {
-      background-color: #fdf6e3;
-      padding: 1.5rem;
+      background: #000;
       text-align: center;
+      padding: 6rem 2rem 3rem;
     }
 
     header h1 {
-      margin: 0;
-      font-size: 2.5rem;
-      letter-spacing: 2px;
+      font-size: 3rem;
+      letter-spacing: 3px;
+      color: #fff;
     }
 
     nav {
       display: flex;
       justify-content: center;
-      background-color: #0e0e0e;
+      background-color: #111;
       padding: 1rem 0;
     }
 
     nav a {
-      color: #f0f0f0;
+      color: #fff;
       margin: 0 1.5rem;
       text-decoration: none;
       font-weight: bold;
@@ -44,194 +47,146 @@
       color: #00c2ff;
     }
 
-  .menu-toggle {
-    display: none;
-    font-size: 2rem;
-    color: #f0f0f0;
-    cursor: pointer;
-  }
-  
-  .nav-links {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-  }
-  
-  /* Responsive menu */
-  @media (max-width: 768px) {
-    .menu-toggle {
-      display: block;
-      text-align: center;
-      margin: 0 auto;
-    }
-  
-    .nav-links {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      background-color: #141414;
-      padding: 1rem 0;
-    }
-  
-    .nav-links.active {
+    .main-container {
       display: flex;
-    }
-  
-    nav a {
-      margin: 0.5rem 0;
-    }
-  }
-
-    main {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
+      max-width: 1300px;
+      margin: 3rem auto;
+      padding: 0 2rem;
     }
 
-    section {
-      margin-bottom: 3rem;
+    .sidebar {
+      width: 250px;
+      margin-right: 2rem;
     }
 
-    h2 {
-      border-bottom: 2px solid  #0e0e0e;
-      padding-bottom: 0.5rem;
+    .sidebar h3 {
       margin-bottom: 1rem;
+      font-size: 1.2rem;
+      text-transform: uppercase;
+      color: #fff;
     }
 
-  .gallery {
-    display: flex;
-    gap: 1rem; /* adds spacing between images */
-    flex-wrap: wrap; /* optional: wraps to next line on small screens */
-    justify-content: center; /* center images horizontally */
-  }
-  
-  .gallery img {
-    width: 200px; /* or whatever size you prefer */
-    border-radius: 8px;
-    transition: transform 0.3s;
-  }
+    .sidebar ul {
+      list-style: none;
+    }
 
+    .sidebar li {
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar a {
+      text-decoration: none;
+      color: #bbb;
+    }
+
+    .sidebar a:hover {
+      color: #00c2ff;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      flex: 1;
+    }
+
+    .gallery-item {
+      background: #111;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      display: block;
+      filter: grayscale(100%);
+    }
+
+    .gallery-item h4 {
+      padding: 0.75rem 1rem 0 1rem;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    .gallery-item p {
+      padding: 0 1rem 1rem;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
 
     footer {
       text-align: center;
       padding: 2rem;
-      background-color: #1a1a1a;
+      background-color: #111;
       font-size: 0.9rem;
+      color: #bbb;
     }
   </style>
 </head>
 <body>
   <header>
     <h1>STUDIO ELLIPSIS</h1>
-    <p></p>
   </header>
 
   <nav>
-    <div class="menu-toggle" id="menu-toggle">&#9776;</div>
-    <div class="nav-links" id="nav-links">
-      <a href="#blog">Blog</a>
-      <a href="#art">Art Gallery</a>
-      <a href=#animations>Animation Portfolio</a>
-      <a href=#compsci>Computing</a>
-      
-    </div>
+    <a href="#blog">Blog</a>
+    <a href="#art">Art Gallery</a>
+    <a href="#animations">Animations</a>
+    <a href="#compsci">Computing</a>
   </nav>
 
-  <main>
-    <section id="blog">
-      <article>
-        <h3>The creative works of Riley M. Owen, illustrator and graphite surrealist based out of Johnson City, TN.</h3>
-        <p></p>
-      </article>
-    </section>
+  <div class="main-container">
+    <aside class="sidebar">
+      <h3>PROJECTS</h3>
+      <ul>
+        <li><a href="#">Hand of God</a></li>
+        <li><a href="#">Eternity</a></li>
+        <li><a href="#">Reborn</a></li>
+        <li><a href="#">Martyr</a></li>
+        <li><a href="#">Cleanse</a></li>
+        <li><a href="#">Sainte Chappele</a></li>
+        <li><a href="#">Animations</a></li>
+        <li><a href="#">Computing</a></li>
+      </ul>
+    </aside>
 
-    <section id="art">
-      <h2>Art Gallery</h2>
-      <div class="gallery">
-        <a href="/Gallery/art1.html">
-          <img src="/Gallery/Hand_of_God.png" alt="Artwork 1"> 
-        </a>
-        <a href="/Gallery/art2.html">
-          <img src="/Gallery/I saw eternity the other night.png" alt="Artwork 2">
-        </a>
-        <a href="/Gallery/art3.html">
-        <img src="/Gallery/Reborn.png" alt="Artwork 3">
-        </a>
-        <a href="/Gallery/art4.html">
-        <img src="/Gallery/Martyr.png" alt="Artwork 4">
-        </a>
-        <a href="/Gallery/art5.html">
-        <img src="/Gallery/Cleanse.png" alt="Artwork 5">
-        </a>
-        <a href="/Gallery/art6.html">
-        <img src="/Gallery/sainte_chappele.png" alt="Artwork 6">
-        </a>
-        <a href="/Gallery/art7.html">
-        <img src="/Gallery/sainte_chappele.png" alt="Artwork 7">
-        </a>
-        <a href="/Gallery/art8.html">
-        <img src="/Gallery/sainte_chappele.png" alt="Artwork 8">
-        </a>
+    <main class="gallery">
+      <div class="gallery-item">
+        <a href="/Gallery/art1.html"><img src="/Gallery/Hand_of_God.png" alt="Artwork"></a>
+        <h4>Hand of God</h4>
+        <p>Graphite on paper</p>
       </div>
-    </section>
-
-    <section id="animations">
-      <h2>Animation Portfolio</h2>
-      <div class="animation">
-          <img src="/Animations/Title_Vid.mov" alt="Animation 1">
-          <img src="/Animations/Eyes.mp4" alt="Animation 2">
-          <img src="" alt="Animation 3">
-                <a href="/Gallery/art1.html">
-          <img src="/Gallery/Hand_of_God.png" alt="Animation 1"> 
-          </a>
-          <a href="/Gallery/art2.html">
-            <img src="/Gallery/Martyr.png" alt="Animation 2">
-          </a>
-          <a href="/Gallery/art3.html">
-          <img src="/Gallery/Martyr.png" alt="Animation 3">
-          </a>
-          <a href="/Gallery/art4.html">
-          <img src="/Gallery/Martyr.png" alt="Animation 4">
-          </a>
-          <a href="/Gallery/art5.html">
-          <img src="/Gallery/Martyr.png" alt="Animation 5">
-          </a>
-          <a href="/Gallery/art6.html">
-          <img src="/Gallery/Martyr.png" alt="Animation 6">
-          </a>
-          <a href="/Gallery/art7.html">
-          <img src="/Gallery/Martyr.png" alt="Animation 7">
-          </a>
-          <a href="/Gallery/art8.html">
-          <img src="/Gallery/Martyr.png" alt="Animation 8">
-          </a>
+      <div class="gallery-item">
+        <a href="/Gallery/art2.html"><img src="/Gallery/I saw eternity the other night.png" alt="Artwork"></a>
+        <h4>Eternity</h4>
+        <p>Graphite on paper</p>
       </div>
-    </section>
-
-    <section id="compsci">
-      <h2>Others</h2>
-            <article>
-              <h3> Below is a link towards my work focused on my work in Ethical Hacking, Game Design, Robotics, and other projects in the field of computer science.</h3>
-              <p></p>
-            </article>
-      <a href="/Computing/Cyber_Menu.html">Studio Ellipsis- Computing</a>
-  </main>
+      <div class="gallery-item">
+        <a href="/Gallery/art3.html"><img src="/Gallery/Reborn.png" alt="Artwork"></a>
+        <h4>Reborn</h4>
+        <p>Graphite on paper</p>
+      </div>
+      <div class="gallery-item">
+        <a href="/Gallery/art4.html"><img src="/Gallery/Martyr.png" alt="Artwork"></a>
+        <h4>Martyr</h4>
+        <p>Graphite on paper</p>
+      </div>
+      <div class="gallery-item">
+        <a href="/Gallery/art5.html"><img src="/Gallery/Cleanse.png" alt="Artwork"></a>
+        <h4>Cleanse</h4>
+        <p>Graphite on paper</p>
+      </div>
+      <div class="gallery-item">
+        <a href="/Gallery/art6.html"><img src="/Gallery/sainte_chappele.png" alt="Artwork"></a>
+        <h4>Sainte Chappele</h4>
+        <p>Graphite on paper</p>
+      </div>
+    </main>
+  </div>
 
   <footer>
     &copy; 2025 Studio Ellipsis. All rights reserved.
   </footer>
-
-  
-  <script>
-    const toggle = document.getElementById('menu-toggle');
-    const navLinks = document.getElementById('nav-links');
-  
-    toggle.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
-    });
-  </script>
-
 </body>
 </html>
-
-Change the structure of my website to be reminiscent to this one.
