@@ -37,7 +37,15 @@
       animation: fadeIn 1s ease forwards;
     }
 
-    nav a {
+    /* Force all nav and project links to stay neon green */
+    nav a:link,
+    nav a:visited,
+    nav a:hover,
+    nav a:active,
+    .project-list a:link,
+    .project-list a:visited,
+    .project-list a:hover,
+    .project-list a:active {
       color: #00ff99;
       text-decoration: none;
       transition: transform 0.2s;
@@ -47,14 +55,7 @@
       transform: scale(1.1);
       text-shadow: 0 0 10px #00ff99;
     }
-    
-    nav a,
-    nav a:visited {
-      color: #00ff99;
-      text-decoration: none;
-      transition: transform 0.2s;
-    }
-    
+
     main {
       max-width: 800px;
       margin: 2rem auto;
@@ -126,7 +127,7 @@
     <section id="Introduction">
       <h2>My Experience With Cyber-</h2>
       <ul class="project-list">
-        <li> Throughout my expeience with cyber I have went through multitudes of competitions, these include but are not limited to: </li>
+        <li> Throughout my experience with cyber I have went through multitudes of competitions, these include but are not limited to: </li>
         <li>   -- 2024 DOE's CyberForce (Placed 19th)</li>
         <li>   -- 2024 Collegiate Penetration Testing Competition (Placed 5th) </li>
         <li>   -- 2025 Embedded Capture The Flag (Placed 30th)</li>
