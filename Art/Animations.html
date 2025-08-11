@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STUDIO ELLIPSIS</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+
+    header {
+      background: #000;
+      text-align: center;
+      padding: 6rem 2rem 3rem;
+    }
+
+    header h1 {
+      font-size: 3rem;
+      letter-spacing: 3px;
+      color: #fff;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      background-color: #111;
+      padding: 1rem 0;
+    }
+
+    nav a {
+      color: #fff;
+      margin: 0 1.5rem;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      color: #00c2ff;
+    }
+
+    .main-container {
+      display: flex;
+      max-width: 1300px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+    }
+
+    .sidebar {
+      width: 250px;
+      margin-right: 2rem;
+    }
+
+    .sidebar h3 {
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    .sidebar ul {
+      list-style: none;
+    }
+
+    .sidebar li {
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar a {
+      text-decoration: none;
+      color: #bbb;
+    }
+
+    .sidebar a:hover {
+      color: #00c2ff;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      flex: 1;
+    }
+
+    .gallery-item {
+      background: #111;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      display: block;
+      filter: grayscale(100%);
+    }
+
+    .gallery-item h4 {
+      padding: 0.75rem 1rem 0 1rem;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    .gallery-item p {
+      padding: 0 1rem 1rem;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      background-color: #111;
+      font-size: 0.9rem;
+      color: #bbb;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>STUDIO ELLIPSIS</h1>
+  </header>
+
+  <nav>
+    <a href="#blog">ILLUSTRATION</a>
+    <a href="#art">ANIMATION</a>
+    <a href="#animations">3D MODELING</a>
+    <a href="https://studioellipsis.org">MENU</a>
+  </nav>
+
+  <div class="main-container">
+    <aside class="sidebar">
+      <h3>ANIMATIONS</h3>
+      <ul>
+        <li><a href="#">Hand of God</a></li>
+        <li><a href="#">Eternity</a></li>
+        <li><a href="#">Reborn</a></li>
+        <li><a href="#">Martyr</a></li>
+        <li><a href="#">Cleanse</a></li>
+        <li><a href="#">Sainte Chappele</a></li>
+      </ul>
+    </aside>
+
+    <main class="gallery">
+      <div class="gallery-item">
+        <a href="/Gallery/art1.html"><img src="/Gallery/Hand_of_God.png" alt="Artwork"></a>
+        <h4>Hand of God</h4>
+        <p>Graphite on paper</p>
+      </div>
+      <div class="gallery-item">
+        <a href="/Gallery/art2.html"><img src="/Gallery/I saw eternity the other night.png" alt="Artwork"></a>
+        <h4>Eternity</h4>
+        <p>Graphite on paper</p>
+      </div>
+      <div class="gallery-item">
+        <a href="/Gallery/art3.html"><img src="/Gallery/Reborn.png" alt="Artwork"></a>
+        <h4>Reborn</h4>
+        <p>Graphite on paper</p>
+      </div>
+      <div class="gallery-item">
+        <a href="/Gallery/art4.html"><img src="/Gallery/Martyr.png" alt="Artwork"></a>
+        <h4>Martyr</h4>
+        <p>Graphite on paper</p>
+      </div>
+      <div class="gallery-item">
+        <a href="/Gallery/art5.html"><img src="/Gallery/Cleanse.png" alt="Artwork"></a>
+        <h4>Cleanse</h4>
+        <p>Graphite on paper</p>
+      </div>
+      <div class="gallery-item">
+        <a href="/Gallery/art6.html"><img src="/Gallery/sainte_chappele.png" alt="Artwork"></a>
+        <h4>Sainte Chappele</h4>
+        <p>Graphite on paper</p>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    &copy; 2025 Studio Ellipsis. All rights reserved.
+  </footer>
+</body>
+</html>
