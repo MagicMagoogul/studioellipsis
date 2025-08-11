@@ -1,0 +1,130 @@
+<!-- Writeup page for the cybersecurity part of my website, useful to teach people cybersecurity -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riley Owen — Cybersecurity Projects</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      color: #00ff99;
+      font-family: 'Courier New', Courier, monospace;
+      text-shadow: 0 0 5px #00ff99;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem;
+      border-bottom: 1px solid #00ff99;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 3rem;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      padding: 1rem;
+      border-bottom: 1px solid #00ff99;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    nav a {
+      color: #00ff99;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+
+    nav a:hover {
+      transform: scale(1.1);
+      text-shadow: 0 0 10px #00ff99;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      animation: fadeInUp 1s ease forwards;
+    }
+
+    section {
+      margin-bottom: 3rem;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1s ease forwards;
+      animation-delay: 0.5s;
+      animation-fill-mode: forwards;
+    }
+
+    h2 {
+      border-bottom: 1px solid #00ff99;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .project-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .project-list li {
+      margin-bottom: 1rem;
+      transition: transform 0.3s;
+    }
+
+    .project-list li:hover {
+      transform: translateX(10px);
+      text-shadow: 0 0 10px #00ff99;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid #00ff99;
+      font-size: 0.9rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Linux Hardening Scripting</h1>
+  </header>
+
+  <nav>
+
+    <a href="https://www.studioellipsis.org/Computing/Cyber_Menu.html" class="nav-link"><--</a>
+  </nav>
+
+  <main>
+    <section id="Introduction">
+      <h2>Introduction to Galleon</h2>
+      <ul class="Main Body">
+          <p>The purpose of Galleon is to have a flexable, updateable, and modularized hardening script that is clean and will have different modes for turning off services dependent on system configurations.</p>
+      </ul>
+    </section>
+  </main>
+  
+  <footer>
+    &copy; 2025 Riley Owen. All rights reserved.
+  </footer>
+</body>
+</html>
+
