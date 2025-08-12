@@ -1,105 +1,114 @@
-<!--This is the page for my online resume-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Resume</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Riley Owen — Resume</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    background-color: #f4f4f4;
+  html,body{height:100%}
+  body{
+    margin:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;line-height:1.5;
+  }
+
+  /* === Page wrapper: fills more of the screen === */
+  .resume{
+    display:grid;
+    grid-template-columns: 320px 1fr;           /* wider sidebar + full content */
+    gap:24px;
+    width:min(96vw,1600px);                      /* use most of the viewport */
+    margin:0 auto;
+    padding:24px;
+    min-height:100vh;                             /* fill the height */
   }
 
   /* Sidebar */
-  .sidebar {
-    width: 25%;
-    background-color: #1a1a1a;
-    color: white;
-    padding: 20px;
-    text-align: center;
+  .sidebar{
+    background:#1a1a1a;color:#fff;border-radius:10px;padding:24px;
+    position:sticky; top:24px; height:fit-content;
+    box-shadow:0 6px 24px rgba(0,0,0,.15);
+    text-align:center;
+  }
+  .sidebar img{width:90%;border-radius:12px;margin-bottom:16px}
+  .sidebar h1{margin:.25rem 0 0;font-size:1.4rem;letter-spacing:.03em}
+  .sidebar p{margin:.35rem 0 1rem;opacity:.85}
+  .sidebar a:link,.sidebar a:visited,.sidebar a:hover,.sidebar a:active{
+    color:#00ff99;text-decoration:none;display:block;margin:.4rem 0;
   }
 
-  .sidebar img {
-    width: 80%;
-    border-radius: 50%;
-    margin-bottom: 20px;
+  /* Main grid (fills width) */
+  .main{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(260px,1fr));  /* 3 columns on desktop */
+    gap:24px;
+    align-content:start;
   }
-
-  .links a {
-    display: block;
-    margin: 10px 0;
-    color: #00ff99;
-    text-decoration: none;
+  .box{
+    background:#fff;border-radius:12px;padding:20px;
+    box-shadow:0 8px 24px rgba(0,0,0,.08), inset 0 0 0 1px rgba(0,0,0,.06);
+    min-height:180px;
   }
+  .box h2{margin:0 0 .6rem}
+  .muted{opacity:.8}
 
-  /* Main content */
-  .main {
-    width: 75%;
-    padding: 20px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+  /* Responsive breakpoints */
+  @media (max-width:1200px){
+    .main{grid-template-columns: repeat(2, minmax(260px,1fr));}
   }
-
-  .box {
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
-  }
-
-  h2 {
-    margin-top: 0;
+  @media (max-width:760px){
+    .resume{grid-template-columns:1fr}
+    .sidebar{position:static}
+    .main{grid-template-columns:1fr}
   }
 </style>
 </head>
 <body>
 
+<div class="resume">
   <!-- Sidebar -->
-  <div class="sidebar">
-    <img src="your-photo.jpg" alt="Your Name">
-    <h2>RILEY OWEN</h2>
+  <aside class="sidebar">
+    <!-- optional photo -->
+    <!-- <img src="your-photo.jpg" alt="Riley Owen"> -->
+    <h1>RILEY OWEN</h1>
     <p>Cybersecurity Enthusiast</p>
+    <a href="#">Youtube</a>
+    <a href="#">Website</a>
+    <a href="#">GitHub</a>
+    <a href="#">LinkedIn</a>
+  </aside>
 
-    <div class="links">
-      <a href="https://www.youtube.com/@rileymowen-cyb3rs3curity">Youtube</a>
-      <a href="studioellipsis.org">Website</a>
-      <a href="https://github.com/MagicMagoogul">GitHub</a>
-      <a href="www.linkedin.com/in/riley-owen-cyb3r">LinkedIn</a>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main">
-    <div class="box">
+  <!-- Main content -->
+  <main class="main">
+    <section class="box">
       <h2>About Me</h2>
-      <p></p>
-    </div>
-    <div class="box">
+      <p class="muted">Short intro about who you are and what you do.</p>
+    </section>
+
+    <section class="box">
       <h2>Experience</h2>
-      <p>Cyber Security Club President 25-Present</p>
-    </div>
-    <div class="box">
+      <p class="muted">Cyber Security Club President 25–Present</p>
+    </section>
+
+    <section class="box">
       <h2>Education</h2>
-      <p>Degrees, certifications, schools attended.</p>
-    </div>
-    <div class="box">
+      <p class="muted">Degrees, certifications, schools.</p>
+    </section>
+
+    <section class="box">
       <h2>Skills</h2>
-      <p>List of key skills you have.</p>
-    </div>
-    <div class="box">
+      <p class="muted">List of key skills you have.</p>
+    </section>
+
+    <section class="box">
       <h2>Projects</h2>
-      <p>Examples of important projects you've worked on.</p>
-    </div>
-    <div class="box">
+      <p class="muted">Highlights of important work.</p>
+    </section>
+
+    <section class="box">
       <h2>References</h2>
-      <p>David Tarnoff, Jakob Gillenwater</p>
-    </div>
-  </div>
+      <p class="muted">Names and contact info.</p>
+    </section>
+  </main>
+</div>
 
 </body>
 </html>
