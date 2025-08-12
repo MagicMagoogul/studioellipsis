@@ -16,6 +16,17 @@
       color: white;
       font-family: 'Helvetica Neue', sans-serif;
       overflow-x: hidden;
+      /* ↓ Zoom out */
+      zoom: 0.85; /* Chromium/WebKit */
+    }
+
+    /* Firefox zoom fallback */
+    @-moz-document url-prefix() {
+      body {
+        transform: scale(0.85);
+        transform-origin: 0 0;
+        width: calc(100% / 0.85); /* compensate width after scaling */
+      }
     }
 
     header {
@@ -77,10 +88,10 @@
     <header>
       <h1>RILEY OWEN</h1>
       <p class="subtitle">Cyber Security Enthusiast<br>and Technologist</p>
-        <video class="preview" autoplay muted loop playsinline>
-          <source src="Animations/Robot_Walking.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+      <video class="preview" autoplay muted loop playsinline>
+        <source src="Animations/Robot_Walking.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     </header>
   </div>
 
