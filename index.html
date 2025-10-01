@@ -5,19 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Riley Owen</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    :root { --nav-h: 64px; } /* menu height */
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background-color: #000;
       color: white;
       font-family: 'Helvetica Neue', sans-serif;
       overflow-x: hidden;
-      /* ↓ Zoom out */
-      zoom: 0.85; /* Chromium/WebKit */
+      zoom: 0.85; /* Chromium/WebKit zoom */
+      /* keep content clear of fixed bottom nav */
+      padding-bottom: calc(var(--nav-h) + 24px); /* 24px extra visual gap */
     }
 
     /* Firefox zoom fallback */
@@ -25,17 +24,15 @@
       body {
         transform: scale(0.85);
         transform-origin: 0 0;
-        width: calc(100% / 0.85); /* compensate width after scaling */
+        width: calc(100% / 0.85);
+        padding-bottom: calc(var(--nav-h) + 24px);
       }
     }
 
-    header {
-      padding: 4rem 2rem 2rem;
-      text-align: left;
-    }
+    header { padding: 4rem 2rem 2rem; text-align: left; }
 
     .container {
-      max-width: 1200px;
+      max-width: 1400px;           /* was 1200px → video appears larger */
       margin: 0 auto;
       padding: 0 2rem;
     }
@@ -47,28 +44,28 @@
       line-height: 1.1;
     }
 
-    .subtitle {
-      font-size: 1.5rem;
-      font-weight: 300;
-      margin-top: 1rem;
-    }
+    .subtitle { font-size: 1.5rem; font-weight: 300; margin-top: 1rem; }
 
     .preview {
       width: 100%;
       border-radius: 1rem;
       margin-top: 2rem;
+      margin-bottom: 2.5rem;       /* extra space so it never feels tight */
       box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+      display: block;
     }
 
     nav {
       position: fixed;
-      bottom: 0;
-      width: 100%;
+      left: 0; right: 0; bottom: 0;
+      height: var(--nav-h);
       background-color: #111;
       display: flex;
+      align-items: center;          /* vertically center links */
       justify-content: space-around;
-      padding: 1rem 0;
+      padding: 0 1rem;
       border-top: 1px solid #222;
+      z-index: 1000;                /* stay on top just in case */
     }
 
     nav a {
@@ -78,9 +75,7 @@
       transition: color 0.2s ease;
     }
 
-    nav a:hover {
-      color: white;
-    }
+    nav a:hover { color: white; }
   </style>
 </head>
 <body>
