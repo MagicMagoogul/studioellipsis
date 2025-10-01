@@ -1,0 +1,140 @@
+<!-- Writeup page for the cybersecurity part of my website, useful to teach people cybersecurity -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riley Owen- Shatter</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      color: #00ff99;
+      font-family: 'Courier New', Courier, monospace;
+      text-shadow: 0 0 5px #00ff99;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem;
+      border-bottom: 1px solid #00ff99;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 3rem;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      padding: 1rem;
+      border-bottom: 1px solid #00ff99;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    nav a {
+      color: #00ff99;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+
+    nav a:hover {
+      transform: scale(1.1);
+      text-shadow: 0 0 10px #00ff99;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      animation: fadeInUp 1s ease forwards;
+    }
+
+    section {
+      margin-bottom: 3rem;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1s ease forwards;
+      animation-delay: 0.5s;
+      animation-fill-mode: forwards;
+    }
+
+    h2 {
+      border-bottom: 1px solid #00ff99;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .project-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .project-list li {
+      margin-bottom: 1rem;
+      transition: transform 0.3s;
+    }
+
+    .project-list li:hover {
+      transform: translateX(10px);
+      text-shadow: 0 0 10px #00ff99;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid #00ff99;
+      font-size: 0.9rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Windows Red Teaming Scripting</h1>
+  </header>
+
+  <nav>
+
+    <a href="https://www.studioellipsis.org/Computing/projects.html" class="nav-link"><--</a>
+  </nav>
+
+  <main>
+    <section id="Introduction">
+
+      <h2>Tools</h2>
+      <ul class="Main Body">
+          <p>The purpose of Shatter is to have a verbose script that will compile all my knowledge on windows red teaming and be a perfect windows pen testing tool to test the base security of systems.</p>
+      </ul>
+      <h2>SHATTER</h2>
+      <ul class="Main Body">
+          <p>SHATTER is a loud script written in python that will first enumerate and then attack ports open on windows systems. The point of this is to make a tool to ethically hack windows in order to learn about windows.</p>
+      </ul>
+      <h2>DOWNLOAD</h2>
+      <ul class="Main Body">
+          <p>Download Here:</p>
+      </ul>
+    </section>
+  </main>
+  
+  <footer>
+    &copy; 2025 Riley Owen. All rights reserved.
+  </footer>
+</body>
+</html>
+
+
