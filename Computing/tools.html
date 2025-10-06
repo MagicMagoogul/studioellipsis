@@ -1,11 +1,9 @@
-<!-- Writeup page for the cybersecurity part of my website, useful to teach people cybersecurity -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Riley Owen — Cybersecurity Writeups</title>
+  <title>Riley Owen: Computer Science</title>
   <style>
     body {
       margin: 0;
@@ -37,7 +35,15 @@
       animation: fadeIn 1s ease forwards;
     }
 
-    nav a {
+    /* Force all nav and project links to stay neon green */
+    nav a:link,
+    nav a:visited,
+    nav a:hover,
+    nav a:active,
+    .project-list a:link,
+    .project-list a:visited,
+    .project-list a:hover,
+    .project-list a:active {
       color: #00ff99;
       text-decoration: none;
       transition: transform 0.2s;
@@ -105,19 +111,29 @@
 </head>
 <body>
   <header>
-    <h1>Riley Owen — Cybersecurity Writeups</h1>
+    <h1>Riley Owen — Computer Science/Cyber Security</h1>
   </header>
 
   <nav>
     <a href="Cyber_Menu.html" class="nav-link">Home</a>
     <a href="projects.html" class="nav-link">Projects</a>
     <a href="tools.html" class="nav-link">Tools</a>
-    <a href="https://www.studioellipsis.org/" class="nav-link">Main Menu</a>
+    <a href="https://studioellipsis.org" class="nav-link">Main Menu</a>
   </nav>
 
   <main>
-    <section id="writeups">
-      <h2>Writeups</h2>
+    <section id="Introduction">
+      <h2>My Experience With Cyber-</h2>
+      <ul class="project-list">
+        <p>Throughout my experience with cyber I have went through multitudes of competitions, these include but are not limited to: </p>
+        <li>   -- 2024 DOE's CyberForce (Placed 19th) </li>
+        <li>   -- 2024 Collegiate Penetration Testing Competition (Placed 5th) </li>
+        <li>   -- 2025 Embedded Capture The Flag (Placed 30th) </li>
+      </ul>
+    </section>
+
+    <section id="Newest Projects">
+      <h2>Newest Projects</h2>
       <ul class="project-list">
             <a href="Tools/Red.html" class="nav-link">|-- Red Teaming Tools</a>
             <a href="Tools/Red.html" class="nav-link">|-- Blue Teaming Tools</a>
@@ -132,3 +148,4 @@
   </footer>
 </body>
 </html>
+
