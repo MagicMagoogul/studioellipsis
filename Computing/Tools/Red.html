@@ -195,7 +195,7 @@
 const entries = [
   {
     term: "Recon",
-    tags: ["recon","Recon"],
+    tags: ["recon"],
     what: "Initial asset discovery and surface mapping.",
     checks: ["Check robots.txt, sitemap.xml","Enumerate dirs/files","Identify tech stack"],
     payloads: ["N/A (methodology)"],
@@ -205,7 +205,7 @@ const entries = [
   {
     term: "Enumeration",
     tags: ["enumeration"],
-    what: ".",
+    what: "Finding vulnerabilities in the found services.",
     checks: ["., .","./.","."],
     payloads: ["N/A (methodology)"],
     tools: [".",".",".","."],
@@ -214,7 +214,7 @@ const entries = [
   {
     term: "Exploitation",
     tags: ["exploitation"],
-    what: ".",
+    what: "Using vulnerabilities to gain information/credentials about a system.",
     checks: ["., .","./.","."],
     payloads: ["N/A (methodology)"],
     tools: [".",".",".","."],
@@ -222,8 +222,17 @@ const entries = [
   },
   {
     term: "Initial Access",
-    tags: ["exploitation"],
-    what: ".",
+    tags: ["initial access"],
+    what: "Using the credentials found to access a system.",
+    checks: ["., .","./.","."],
+    payloads: ["N/A (methodology)"],
+    tools: [".",".",".","."],
+    notes: "Initial Access"
+  },
+  {
+    term: "Privilege Escalation",
+    tags: ["privilege"],
+    what: "Escalating your priveleges to root access",
     checks: ["., .","./.","."],
     payloads: ["N/A (methodology)"],
     tools: [".",".",".","."],
@@ -231,12 +240,12 @@ const entries = [
   },
   {
     term: "Persistence",
-    tags: ["exploitation"],
-    what: ".",
+    tags: ["persistence"],
+    what: "Making backdoors to more easily access a system.",
     checks: ["., .","./.","."],
     payloads: ["N/A (methodology)"],
     tools: [".",".",".","."],
-    notes: "Presistence"
+    notes: "Persistence"
   },
 
 ];
