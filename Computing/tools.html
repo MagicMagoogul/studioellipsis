@@ -1,61 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Riley Owen: Computer Science</title>
   <style>
+    :root{
+      --neon: #00ff99;
+      --bg: #000;
+      --glass: rgba(0,255,153,0.05);
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    /* Page base */
     body {
       margin: 0;
-      background-color: #000;
-      color: #00ff99;
-      font-family: 'Courier New', Courier, monospace;
-      text-shadow: 0 0 5px #00ff99;
-      transition: background-color 0.3s, color 0.3s;
+      background-color: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      transition: background-color .3s, color .3s;
+      -webkit-font-smoothing: antialiased;
     }
 
     header {
       text-align: center;
-      padding: 2rem;
-      border-bottom: 1px solid #00ff99;
+      padding: 2rem 1rem;
+      border-bottom: var(--border);
       animation: fadeIn 1s ease forwards;
     }
 
     header h1 {
       margin: 0;
-      font-size: 3rem;
+      font-size: 2.25rem;
+      line-height: 1.1;
     }
 
-    nav {
+    /* NAV - container */
+    .navbar {
       display: flex;
       justify-content: center;
-      gap: 2rem;
-      padding: 1rem;
-      border-bottom: 1px solid #00ff99;
-      animation: fadeIn 1s ease forwards;
+      align-items: center;
+      padding: 0.6rem 1rem;
+      border-bottom: var(--border);
+      position: relative;
+      z-index: 20;
+      background: linear-gradient(0deg, rgba(0,0,0,0.6), transparent);
+      gap: 1rem;
     }
 
-    /* Force all nav and project links to stay neon green */
-    nav a:link,
-    nav a:visited,
-    nav a:hover,
-    nav a:active,
-    .project-list a:link,
-    .project-list a:visited,
-    .project-list a:hover,
-    .project-list a:active {
-      color: #00ff99;
+    /* Menu row */
+    .menu {
+      display: flex;
+      gap: 1.25rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .menu a, .menu button {
+      color: var(--neon);
       text-decoration: none;
-      transition: transform 0.2s;
+      font-weight: 600;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: .35rem .6rem;
+      border-radius: .25rem;
+      text-shadow: 0 0 5px var(--neon);
+      transition: transform .15s, box-shadow .15s;
+      font-family: var(--font);
     }
 
-    nav a:hover {
-      transform: scale(1.1);
-      text-shadow: 0 0 10px #00ff99;
+    .menu a:hover, .menu button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(0,255,153,0.18);
     }
 
+    /* Dropdown */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: transparent;
+      color: var(--neon);
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: calc(100% + .5rem);
+      left: 0;
+      background: var(--bg);
+      border: var(--border);
+      box-shadow: 0 0 20px rgba(0,255,153,0.06);
+      min-width: 220px;
+      padding: .35rem 0;
+      z-index: 40;
+      backdrop-filter: blur(2px);
+      border-radius: 6px;
+    }
+
+    .dropdown-content a {
+      display: block;
+      padding: .5rem 1rem;
+      text-decoration: none;
+      color: var(--neon);
+      white-space: nowrap;
+      transition: background .12s, transform .08s;
+      font-weight: 500;
+    }
+
+    .dropdown-content a:hover {
+      background: rgba(0,255,153,0.03);
+      transform: translateX(6px);
+      text-shadow: 0 0 10px var(--neon);
+    }
+
+    /* Show dropdown on hover (desktop) */
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    /* Mobile: hamburger toggle */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      width: 28px;
+      height: 22px;
+      justify-content: center;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      height: 2px;
+      background: var(--neon);
+      border-radius: 2px;
+      box-shadow: 0 0 6px var(--neon);
+    }
+
+    /* Responsive: collapse menu into vertical panel on small screens */
+    @media (max-width: 780px) {
+      .menu {
+        display: none;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 100%;
+        background: rgba(0,0,0,0.95);
+        border: var(--border);
+        min-width: 90%;
+        padding: .75rem;
+        flex-direction: column;
+        gap: .25rem;
+        border-radius: 8px;
+      }
+
+      .menu.show {
+        display: flex;
+      }
+
+      .dropdown-content {
+        position: static;
+        top: auto;
+        left: auto;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        background: transparent;
+      }
+
+      .dropdown:hover .dropdown-content { display: none; } /* disable hover behaviour on mobile */
+
+      .hamburger { display: flex; }
+    }
+
+    /* Main content */
     main {
-      max-width: 800px;
+      max-width: 900px;
       margin: 2rem auto;
       padding: 0 1rem;
       animation: fadeInUp 1s ease forwards;
@@ -66,12 +196,12 @@
       opacity: 0;
       transform: translateY(20px);
       animation: fadeInUp 1s ease forwards;
-      animation-delay: 0.5s;
+      animation-delay: 0.25s;
       animation-fill-mode: forwards;
     }
 
     h2 {
-      border-bottom: 1px solid #00ff99;
+      border-bottom: 1px solid var(--neon);
       padding-bottom: 0.5rem;
       margin-bottom: 1rem;
     }
@@ -79,30 +209,39 @@
     .project-list {
       list-style: none;
       padding: 0;
+      margin: 0;
     }
 
     .project-list li {
-      margin-bottom: 1rem;
-      transition: transform 0.3s;
+      margin-bottom: .6rem;
+      transition: transform .14s, text-shadow .14s;
     }
 
-    .project-list li:hover {
-      transform: translateX(10px);
-      text-shadow: 0 0 10px #00ff99;
+    .project-list a {
+      color: var(--neon);
+      text-decoration: none;
+      display: inline-block;
+      padding: .25rem .35rem;
+    }
+
+    .project-list a:hover {
+      transform: translateX(8px);
+      text-shadow: 0 0 10px var(--neon);
     }
 
     footer {
       text-align: center;
       padding: 2rem;
-      border-top: 1px solid #00ff99;
+      border-top: var(--border);
       font-size: 0.9rem;
+      margin-top: 2rem;
     }
 
+    /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
     }
-
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -111,25 +250,53 @@
 </head>
 <body>
   <header>
-    <h1>Riley Owen — Computer Science/Cyber Security</h1>
+    <h1>Riley Owen — Computer Science / Cyber Security</h1>
   </header>
 
-  <nav>
-    <a href="Cyber_Menu.html" class="nav-link">Home</a>
-    <a href="projects.html" class="nav-link">Projects</a>
-    <a href="tools.html" class="nav-link">Tools</a>
-    <a href="https://studioellipsis.org" class="nav-link">Main Menu</a>
+  <!-- NAVBAR with dropdown -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <!-- hamburger for mobile -->
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu" title="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="menu" id="menu">
+      <a href="Cyber_Menu.html" class="nav-link">Home</a>
+
+      <div class="dropdown" aria-haspopup="true">
+        <button class="dropdown-toggle nav-link" aria-expanded="false" id="projectsButton">
+          Projects ▾
+        </button>
+        <div class="dropdown-content" role="menu" aria-labelledby="projectsButton">
+          <a href="/Computing/Projects/Cyber/WindowsCracking.html" role="menuitem">Windows PrivEsc</a>
+          <a href="/Computing/Projects/Cyber/LinuxHardening.html" role="menuitem">Linux Hardening</a>
+          <a href="/Computing/Projects/Cyber/WebExploit.html" role="menuitem">Web Exploits</a>
+        </div>
+      </div>
+
+      <a href="tools.html" class="nav-link">Tools</a>
+      <a href="https://studioellipsis.org" class="nav-link">Main Menu</a>
+    </div>
   </nav>
 
   <main>
+    <section id="Introduction">
+      <h2>My Experience With Cyber</h2>
+      <p>Throughout my experience with cyber I have gone through multitudes of competitions, including:</p>
+      <ul class="project-list">
+        <li>2024 DOE's CyberForce — <em>Placed 19th</em></li>
+        <li>2024 Collegiate Penetration Testing Competition — <em>Placed 5th</em></li>
+        <li>2025 Embedded Capture The Flag — <em>Placed 30th</em></li>
+      </ul>
     </section>
-    <section id="Newest Projects">
+
+    <section id="Newest-Projects">
       <h2>Newest Projects</h2>
       <ul class="project-list">
-            <a href="Tools/Red.html" class="nav-link">|-- Red Teaming Tools</a>
-            <a href="Tools/Blue.html" class="nav-link">|-- Blue Teaming Tools</a>
-            <a href="Tools/Cyber_Documentation.html" class="nav-link">|-- Documentation Tools</a>
-            <a href="Tools/Marauders_Map.html" class="nav-link">|-- Marauder's Map </a>
+        <li><a href="Tools/Red.html">|-- Red Teaming Tools</a></li>
+        <li><a href="Tools/Blue.html">|-- Blue Teaming Tools</a></li>
+        <li><a href="Tools/Cyber_Documentation.html">|-- Documentation Tools</a></li>
+        <li><a href="Tools/Marauders_Map.html">|-- Marauder's Map</a></li>
       </ul>
     </section>
   </main>
@@ -137,6 +304,37 @@
   <footer>
     &copy; 2025 Riley Owen. All rights reserved.
   </footer>
+
+  <script>
+    // Mobile menu toggle
+    const hamburger = document.getElementById('hamburger');
+    const menu = document.getElementById('menu');
+    hamburger.addEventListener('click', () => {
+      menu.classList.toggle('show');
+    });
+
+    // Ensure accessible dropdown toggle on small screens (click to show)
+    const projectsButton = document.getElementById('projectsButton');
+    const dropdown = projectsButton && projectsButton.nextElementSibling;
+    projectsButton && projectsButton.addEventListener('click', (e) => {
+      // only toggle dropdown content on small viewports (mobile)
+      if (window.matchMedia('(max-width:780px)').matches) {
+        e.preventDefault();
+        dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+        const expanded = projectsButton.getAttribute('aria-expanded') === 'true';
+        projectsButton.setAttribute('aria-expanded', (!expanded).toString());
+      }
+    });
+
+    // Close mobile menu & dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      if (!menu.contains(target) && !hamburger.contains(target)) {
+        menu.classList.remove('show');
+        if (dropdown) dropdown.style.display = 'none';
+        projectsButton && projectsButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+  </script>
 </body>
 </html>
-
