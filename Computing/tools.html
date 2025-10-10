@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tools</title>
+  <title>Riley Owen: Computer Science</title>
   <style>
     :root {
       --neon: #00ff99;
@@ -131,6 +131,7 @@
       margin-bottom: 1rem;
     }
 
+    /* PROJECT LIST */
     .project-list {
       list-style: none;
       padding: 0;
@@ -138,15 +139,18 @@
 
     .project-list li {
       margin-bottom: 1rem;
-      transition: transform 0.3s;
+      transition: transform 0.2s ease, text-shadow 0.2s ease;
     }
 
     .project-list a {
       color: var(--neon);
       text-decoration: none;
+      display: inline-block;
+      transition: transform 0.2s ease, text-shadow 0.2s ease;
     }
 
-    .project-list a:hover {
+    /* Hover effect: slide right + glow */
+    .project-list li:hover {
       transform: translateX(10px);
       text-shadow: 0 0 10px var(--neon);
     }
