@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Riley Owen: Computer Science</title>
+  <title>Tools</title>
   <style>
     :root {
       --neon: #00ff99;
@@ -51,17 +51,18 @@
       justify-content: center;
     }
 
+    /* Menu items - simple green, no glow */
     .menu a {
       color: var(--neon);
       text-decoration: none;
       font-weight: bold;
-      text-shadow: 0 0 5px var(--neon);
+      text-shadow: none;
       transition: all 0.2s ease;
     }
 
     .menu a:hover {
-      transform: scale(1.1);
-      text-shadow: 0 0 12px var(--neon);
+      transform: scale(1.05);
+      text-decoration: underline;
     }
 
     /* Responsive menu for mobile */
@@ -179,15 +180,15 @@
     </button>
     <div class="menu" id="menu">
       <a href="Cyber_Menu.html">Home</a>
+      <a href="projects.html">Projects</a>
       <a href="tools.html">Tools</a>
       <a href="https://studioellipsis.org">Main Menu</a>
     </div>
   </nav>
 
   <main>
-
     <section id="Newest-Projects">
-      <h2>Newest Projects</h2>
+      <h2>Tools</h2>
       <ul class="project-list">
         <li><a href="Tools/Red.html">|-- Red Teaming Tools</a></li>
         <li><a href="Tools/Blue.html">|-- Blue Teaming Tools</a></li>
