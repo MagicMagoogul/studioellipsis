@@ -76,11 +76,19 @@
     }
 
     .project-list li {
-      margin-bottom: 1rem;
-      transition: transform 0.3s;
+      margin-bottom: 0.6rem;
+      transition: transform 0.2s ease, text-shadow 0.2s ease;
     }
 
-    .project-list li:hover {
+    .project-list a {
+      color: #00ff99;
+      text-decoration: none;
+      display: inline-block;
+      width: 100%;
+      transition: transform 0.2s ease, text-shadow 0.2s ease;
+    }
+
+    .project-list a:hover {
       transform: translateX(10px);
       text-shadow: 0 0 10px #00ff99;
     }
@@ -115,37 +123,37 @@
   <main>
     <section id="Introduction">
       <h2>Port List-</h2>
-      <ul class="Main Body">
-          <li><input class="port-input" type="text" value="20 — FTP (Data)" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="21 — FTP (Control)" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="22 — SSH" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="23 — Telnet" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="25 — SMTP" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="53 — DNS" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="69 — TFTP" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="80 — HTTP" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="110 — POP3" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="123 — NTP" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="139 — NetBIOS/SMB (older)" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="143 — IMAP" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="161 — SNMP" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="389 — LDAP" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="443 — HTTPS" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="445 — SMB (modern)" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="465 — SMTPS (submission over SSL)" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="631 — IPP (printing)" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="993 — IMAPS" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="995 — POP3S" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="1433 — Microsoft SQL Server" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="1521 — Oracle DB" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="3306 — MySQL/MariaDB" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="3389 — RDP" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="5900 — VNC" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="6379 — Redis (unencrypted)" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="8000 — HTTP alt / dev" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="8080 — HTTP-alt / proxy" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="8443 — HTTPS-alt" readonly onclick="this.select()" /></li>
-        <li><input class="port-input" type="text" value="9000 — Dev / misc (often used in CTFs)" readonly onclick="this.select()" /></li>
+      <ul class="project-list">
+        <li><a href="Ports/20.html">20 — FTP (Data)</a></li>
+        <li><a href="Ports/21.html">21 — FTP (Control)</a></li>
+        <li><a href="Ports/22.html">22 — SSH</a></li>
+        <li><a href="Ports/23.html">23 — Telnet</a></li>
+        <li><a href="Ports/25.html">25 — SMTP</a></li>
+        <li><a href="Ports/53.html">53 — DNS</a></li>
+        <li><a href="Ports/69.html">69 — TFTP</a></li>
+        <li><a href="Ports/80.html">80 — HTTP</a></li>
+        <li><a href="Ports/110.html">110 — POP3</a></li>
+        <li><a href="Ports/123.html">123 — NTP</a></li>
+        <li><a href="Ports/139.html">139 — NetBIOS/SMB (older)</a></li>
+        <li><a href="Ports/143.html">143 — IMAP</a></li>
+        <li><a href="Ports/161.html">161 — SNMP</a></li>
+        <li><a href="Ports/389.html">389 — LDAP</a></li>
+        <li><a href="Ports/443.html">443 — HTTPS</a></li>
+        <li><a href="Ports/445.html">445 — SMB (modern)</a></li>
+        <li><a href="Ports/465.html">465 — SMTPS</a></li>
+        <li><a href="Ports/631.html">631 — IPP (printing)</a></li>
+        <li><a href="Ports/993.html">993 — IMAPS</a></li>
+        <li><a href="Ports/995.html">995 — POP3S</a></li>
+        <li><a href="Ports/1433.html">1433 — Microsoft SQL Server</a></li>
+        <li><a href="Ports/1521.html">1521 — Oracle DB</a></li>
+        <li><a href="Ports/3306.html">3306 — MySQL/MariaDB</a></li>
+        <li><a href="Ports/3389.html">3389 — RDP</a></li>
+        <li><a href="Ports/5900.html">5900 — VNC</a></li>
+        <li><a href="Ports/6379.html">6379 — Redis</a></li>
+        <li><a href="Ports/8000.html">8000 — HTTP-alt / dev</a></li>
+        <li><a href="Ports/8080.html">8080 — HTTP-alt / proxy</a></li>
+        <li><a href="Ports/8443.html">8443 — HTTPS-alt</a></li>
+        <li><a href="Ports/9000.html">9000 — Misc / CTF custom services</a></li>
       </ul>
     </section>
   </main>
