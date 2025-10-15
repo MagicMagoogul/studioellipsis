@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>445 — SMB (Modern)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.6;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.5rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a {
+      color: var(--neon);
+    }
+
+    a:hover {
+      text-shadow: 0 0 10px var(--neon);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 445 — SMB (Modern)</h1>
+    <p>A guide to enumeration and exploitation</p>
+  </header>
+
+  <main>
+    <h2>0) What is SMB?</h2>
+    <p>
+      SMB (Server Message Block), also known as CIFS, is a network protocol for file sharing,
+      network browsing, and inter-process communication. Exploiting SMB can allow an attacker
+      to obtain access to shared files, network credentials, or sensitive configurations.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+nmap -sV -p 445,139 [targetip]
+nmap --script smb-os-discovery [targetip]
+      </pre>
+      <p>
+        Use <code>nmap</code> to identify the SMB version and operating system.
+        If the host is running SMBv1 and vulnerable to CVE-2017-0144 (EternalBlue),
+        it can be exploited for remote code execution.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+enum4linux -a [targetip]
+smbclient -L //[targetip] -U ""
+smbclient -N -L //[targetip]
+rpcclient -U "" [targetip]
+rpcclient> enumdomusers
+      </pre>
+      <p>
+        These commands enumerate available SMB shares, users, and policies.
+        Null sessions (<code>-N</code> or empty username) indicate poor access control.
+        Use <code>rpcclient</code> to list domain users and identify potential credentials
+        for later exploitation.
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <pre>
+smbclient //[targetip]/[sharename] -U ""
+msfconsole
+use auxiliary/scanner/smb/smb_ms17_010
+set RHOSTS [targetip]
+run
+hydra -L users.txt -P passwords.txt smb://[targetip]
+      </pre>
+      <p>
+        After identifying weak configurations, attempt to connect to open shares,
+        test for EternalBlue (MS17-010), or perform authorized brute-force testing
+        to identify weak passwords.
+      </p>
+    </details>
+
+    <details>
+      <summary>SMB Info — What to Look For</summary>
+      <ul>
+        <li>Anonymous or guest access to sensitive shares</li>
+        <li>Old SMBv1 servers vulnerable to EternalBlue</li>
+        <li>Readable <code>SYSVOL</code> or <code>NETLOGON</code> shares in domain networks</li>
+        <li>Stored credential files (<code>.ini</code>, <code>.xml</code>, <code>.kdbx</code>)</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required</h2>
+    <pre>
+sudo apt install enum4linux smbclient
+      </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://hackviser.com/tactics/pentesting/services/smb" target="_blank">Hackviser SMB Enumeration Guide</a></li>
+      <li><a href="https://0xdf.gitlab.io/cheatsheets/smb-enum#/" target="_blank">0xdf SMB Cheatsheet</a></li>
+      <li><a href="https://www.geeksforgeeks.org/ethical-hacking/smb-enumeration/" target="_blank">GeeksforGeeks: SMB Enumeration</a></li>
+    </ul>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
