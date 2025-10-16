@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>23 — Telnet (Telnet)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 23 — Telnet (Telnet)</h1>
+    <p>A guide to enumeration and exploitation of the Telnet service</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is Telnet?</h2>
+    <p>
+      Telnet is a simple, text-based protocol that provides bidirectional, interactive communication over TCP (historically defined by RFC 854). It commonly runs on port 23. Unlike SSH, Telnet transmits data — including credentials — in plaintext, making it insecure on untrusted networks. Telnet is still used on legacy devices (network gear, embedded systems, test consoles) and therefore appears in many penetration tests.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+- Quick port/service discovery: nmap -sV -p 23 &lt;target&gt;
+- Banner grabbing to identify Telnet server and version (nc, nmap scripts)
+- Passive recon: search for device types that commonly expose Telnet (routers, switches, IoT)
+      </pre>
+      <p>
+        Start with a focused nmap scan to confirm Telnet is open and capture the banner. Banners often reveal device type, OS, or embedded console prompts that help guide enumeration.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+- Banner grab: nc &lt;target&gt; 23    # raw connection to view banner/prompt
+- nmap scripts: nmap -sV -p 23 --script banner,telnet-encryption &lt;target&gt;
+- Attempt common default credentials (authorized testing only) against device types
+- Use Hydra for credential stuffing if permitted:
+    hydra -L users.txt -P passwords.txt telnet://&lt;target&gt;
+- Look for exposed prompts that accept commands (interactive shells, router consoles)
+      </pre>
+      <p>
+        During enumeration, identify whether the service is an interactive shell (router/switch console) or a simple login prompt. Note whether login attempts leak account validity via differing responses.
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <pre>
+- If credentials found: connect with telnet &lt;target&gt; and perform post-auth enumeration
+- Capture configuration files, network settings, saved plaintext credentials
+- Leverage known device-specific vulnerabilities (firmware exploits, command injection) where applicable
+- If device uses Telnet for boot/console, consider recovery mode misconfigurations (only when authorized)
+      </pre>
+      <p>
+        Telnet’s main impact is credential exposure and interactive access to devices. Download configs and search for plaintext secrets (SNMP community strings, admin passwords, keys). Use discovered creds to pivot to SSH or web admin interfaces.
+      </p>
+    </details>
+
+    <details>
+      <summary>Telnet Info — What to Look For</summary>
+      <ul>
+        <li>Plaintext credentials transmitted over the network</li>
+        <li>Default or well-known device credentials</li>
+        <li>Interactive device consoles (routers, switches, embedded systems)</li>
+        <li>Recovery/boot consoles that bypass normal authentication</li>
+        <li>Old firmware or known CVEs for specific device models</li>
+      </ul>
+    </details>
+
+    <h2>Tools required</h2>
+    <pre>
+sudo apt install nmap netcat hydra telnet
+# Optional:
+# - Metasploit (for device exploits)
+# - searchsploit / exploit-db for device-specific vulnerabilities
+    </pre>
+
+    <h2>Quick copy-paste command cheatsheet</h2>
+    <pre>
+# discovery
+nmap -sV -p 23 --script banner,telnet-encryption &lt;target&gt;
+
+# raw banner grab
+nc &lt;target&gt; 23
+
+# list common default creds (manual testing)
+telnet &lt;target&gt;   # then try admin/admin, root/root, etc.
+
+# brute-force (authorized)
+hydra -L users.txt -P passwords.txt telnet://&lt;target&gt;
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://datatracker.ietf.org/doc/html/rfc854" target="_blank" rel="noopener">RFC 854 — TELNET Protocol Specification</a></li>
+      <li><a href="https://nmap.org/nsedoc/" target="_blank" rel="noopener">Nmap NSE scripts & documentation</a></li>
+      <li><a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-telnet" target="_blank" rel="noopener">HackTricks — Telnet pentesting</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> Use these techniques only on systems you own or are explicitly authorized to test. Unauthorized access is illegal and unethical.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
