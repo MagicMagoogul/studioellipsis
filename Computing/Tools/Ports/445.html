@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>445- SMB ()</title>
+  <title>445 — SMB (File Sharing)</title>
   <style>
     :root {
       --neon: #00ff99;
@@ -80,90 +80,135 @@
     a:hover {
       text-shadow: 0 0 10px var(--neon);
     }
+
     .nav-link {
-  color: var(--neon);
-  text-decoration: none; /* removes underline */
-  font-weight: 700;
-  text-shadow: 0 0 6px var(--neon);
-  }
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
   
-  .nav-link:hover {
-    text-shadow: 0 0 10px var(--neon);
-  }
+    .nav-link:hover {
+      text-shadow: 0 0 10px var(--neon);
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Port 445 — SMB ()</h1>
-    <p>A guide to enumeration and exploitation of Server Message Block</p>
-  <nav>
-  <a href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html" class="nav-link"><--</a>
-  </nav>
+    <h1>Port 445 — SMB (Server Message Block)</h1>
+    <p>A guide to enumeration and exploitation of the SMB protocol</p>
+    <nav>
+      <a href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html" class="nav-link"><--</a>
+    </nav>
   </header>
   
-
   <main>
     <h2>0) What is SMB?</h2>
     <p>
-        Server Message Block (SMB) is a service for transfering files.
+      SMB (Server Message Block), also known as CIFS (Common Internet File System), is a network protocol that allows for file sharing, network browsing, printer access, and inter-process communication between systems. The goal of exploiting SMB is typically to access or modify files and credentials on the network. SMB requires a connection to the server to access and enumerate shared resources.
     </p>
 
     <details open>
       <summary>1) Recon Phase</summary>
+      <h3>Search for specific services and versions of SMB on the machine.</h3>
       <pre>
--
--
--
+nmap -sV -p 445,139 [targetip]
       </pre>
       <p>
-        Use <code>BLANK</code> to identify....
+        Scans ports 445 and 139 for service version information.
+      </p>
+      <pre>
+nmap --script smb-os-discovery [targetip]
+      </pre>
+      <p>
+        Gathers OS version and domain/workgroup details.
+        <br>* If SMBv1 is detected (CVE-2017-0144), it may be vulnerable to EternalBlue.
       </p>
     </details>
 
     <details>
       <summary>2) Enumeration Phase</summary>
+      <p>
+        During enumeration, we attempt to discover shared resources, users, and configurations that may lead to exploitation.
+      </p>
       <pre>
--
--
--
+# Enumerate SMB shares and users
+enum4linux -a [targetip]
       </pre>
       <p>
-        These commands enumerate...
+        Provides details on shares, users, groups, and policies. Look for open shares or weak password policies.
+      </p>
+      <pre>
+# List available shares
+smbclient -L //[targetip] -U ""
+      </pre>
+      <p>
+        Lists available shares anonymously. Useful for quickly spotting exposed directories.
+      </p>
+      <pre>
+# Check for null session access
+smbclient -N -L //[targetip]
+      </pre>
+      <p>
+        Attempts a null session (no authentication). If access is granted, the server may allow unauthorized enumeration.
+      </p>
+      <pre>
+# Enumerate users with RPC
+rpcclient -U "" [targetip]
+rpcclient> enumdomusers
+      </pre>
+      <p>
+        Lists domain users via RPC over SMB — helpful for identifying valid accounts for further testing.
+        <br><em>Note:</em> RPC (Remote Procedure Call) allows a program to execute functions on a remote system as if local.
       </p>
     </details>
 
     <details>
       <summary>3) Exploitation Phase</summary>
+      <p>
+        Once vulnerable configurations or credentials are found, exploitation may be possible.
+      </p>
       <pre>
--
--
--
+# Connect to a discovered share without credentials
+smbclient //[targetip]/[sharename] -U ""
+      </pre>
+      <pre>
+# Check for EternalBlue vulnerability
+msfconsole
+use auxiliary/scanner/smb/smb_ms17_010
+set RHOSTS [targetip]
+run
+      </pre>
+      <pre>
+# Brute-force credentials with Hydra
+hydra -L users.txt -P passwords.txt smb://[targetip]
       </pre>
       <p>
-        After identifying weak configuration...
+        If authentication is successful, access shared folders or escalate privileges using misconfigurations.
       </p>
     </details>
 
     <details>
       <summary>SMB Info — What to Look For</summary>
       <ul>
-        <li>-</li>
-        <li>-</li>
-        <li>-</li>
-        <li>-</li>
+        <li>Exposed anonymous or guest-accessible shares</li>
+        <li>Writable or misconfigured shares allowing uploads</li>
+        <li>SYSVOL/NETLOGON domain shares containing scripts or credentials</li>
+        <li>Older SMBv1 servers vulnerable to EternalBlue (MS17-010)</li>
+        <li>Stored credential files (.ini, .xml, .kdbx, .bak)</li>
       </ul>
     </details>
 
     <h2>Tools Required</h2>
     <pre>
-sudo apt install ...
-      </pre>
+sudo apt install enum4linux smbclient hydra nmap metasploit-framework
+    </pre>
 
     <h2>Citations</h2>
     <ul>
-      <li><a href="https://hackviser.com/tactics/pentesting/services/smb" target="_blank">1</a></li>
-      <li><a href="https://0xdf.gitlab.io/cheatsheets/smb-enum#/" target="_blank">2</a></li>
-      <li><a href="https://www.geeksforgeeks.org/ethical-hacking/smb-enumeration/" target="_blank">3</a></li>
+      <li><a href="https://hackviser.com/tactics/pentesting/services/smb" target="_blank">1 — Hackviser: SMB Enumeration</a></li>
+      <li><a href="https://0xdf.gitlab.io/cheatsheets/smb-enum#/" target="_blank">2 — 0xdf SMB Cheatsheet</a></li>
+      <li><a href="https://www.geeksforgeeks.org/ethical-hacking/smb-enumeration/" target="_blank">3 — GeeksforGeeks: SMB Enumeration</a></li>
     </ul>
   </main>
 
