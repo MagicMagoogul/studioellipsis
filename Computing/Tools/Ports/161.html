@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>161 — SNMP (Simple Network Management Protocol)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 161 — SNMP (Simple Network Management Protocol)</h1>
+    <p>A red-team competition perspective on enumerating and abusing SNMP</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is SNMP?</h2>
+    <p>
+      SNMP is a UDP-based protocol (default port 161) used by network devices and servers for monitoring and management. SNMPv1/v2c rely on community strings (often default/insecure like <code>public</code>/<code>private</code>) and provide read/write ops via OIDs. SNMPv3 adds authentication and privacy but is sometimes misconfigured. In a red-team competition, SNMP is high-value: it can reveal network topology, ARP/Routing tables, interface information, running config snippets, and even plaintext credentials or keys embedded in MIB-backed config objects.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase (playbook & OPSEC)</summary>
+      <pre>
+- Discovery (low-noise first): masscan/nmap UDP 161 with rate limiting
+- Banner & quick probes: nmap -sU -p161 --script=snmp-info <target>
+- Prioritize targets that are routers, switches, firewalls, printers, Windows servers with management agents
+- OPSEC: use conservative timeouts and low packet rates in CTF to avoid noisy detections
+- Note whether device replies to SNMPv1/2c (fast wins) or only SNMPv3 (harder)
+      </pre>
+      <p>
+        Time-box your discovery in the first 10–20 minutes of the engagement: find machines that respond to community strings quickly — that’s usually the fastest escalation path in a competition.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase (what to pull)</summary>
+      <pre>
+# Test common community strings (read-only)
+snmpwalk -v2c -c public <target> 1
+
+# If public works, enumerate common OIDs:
+snmpwalk -v2c -c public <target> 1.3.6.1.2.1      # system, interfaces, ip, tcp, udp
+snmpwalk -v2c -c public <target> 1.3.6.1.2.1.4    # ipRouteTable / ARP info
+snmpwalk -v2c -c public <target> 1.3.6.1.2.1.6    # TCP table
+snmpwalk -v2c -c public <target> 1.3.6.1.2.1.2    # interfaces
+
+# Enumerate device-specific MIB OIDs (Cisco, Juniper, HP) for configs and creds
+snmpwalk -v2c -c public <target> 1.3.6.1.4.1      # enterprise OIDs
+
+# Brute-forcing community strings (targeted, rate-limited)
+onesixtyone -c community-list.txt <target>
+# or use nmap --script snmp-brute
+      </pre>
+      <p>
+        Look for: ARP tables, routing tables, interface IPs, hostnames, list of running processes, startup-config fragments, sysContact/sysLocation, and any exposed text blobs (sometimes configs contain plaintext creds).
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation / Red Team Moves</summary>
+      <pre>
+- Harvested artifacts:
+    - ARP / ipRouteTable => internal host IPs to pivot to
+    - ifAdmin/ifOper names => identify virtual interfaces, VLANs
+    - sysDescr/sysName => OS/device types for targeted exploits
+    - text/config OIDs => possible plaintext credentials or keys
+
+- If SNMP write is allowed (SNMP SET) — high impact:
+    # very dangerous: use only in authorized CTFs
+    snmpset -v2c -c private <target> <oid> i <value>
+
+- Pivot: use discovered internal IPs to reach admin panels (HTTP/SSH/RDP)
+- Lateral gain: try credentials discovered in configs against SSH/HTTP
+- Stealth: export minimal useful data, avoid repeated wide scans after initial enumeration
+      </pre>
+      <p>
+        In red-team competitions, a single successful SNMP read can give a map of internal IPs and device creds — treat it as a force-multiplier for lateral movement.
+      </p>
+    </details>
+
+    <details>
+      <summary>SNMP Info — What to Look For (red-team checklist)</summary>
+      <ul>
+        <li>SNMPv1/v2c read allowed with common community strings (<code>public</code>, <code>private</code>)</li>
+        <li>Writeable community (SET) — immediate high severity (e.g., <code>private</code>)</li>
+        <li>Enterprise-specific OIDs exposing configs or credentials</li>
+        <li>ipNetToMedia/ipRouteTable entries revealing internal subnets and hosts</li>
+        <li>sysContact/sysLocation hinting at admin accounts or physical placement</li>
+        <li>Device type strings (sysDescr) that point to known vendor MIBs and exploits</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required (red-team kit)</h2>
+    <pre>
+sudo apt install nmap snmp snmp-mibs-downloader snmpd snmpwalk snmpget snmpset
+# pentest tools
+sudo apt install onesixtyone
+# or build from source: https://github.com/trailofbits/onesixtyone
+# Useful extras:
+# - snmp-check (enumeration script)
+# - nmap with --script=snmp-* (snmp-info, snmp-brute, snmp-netstat, snmp-interfaces)
+# - Metasploit auxiliary/scanner/snmp/snmp_login
+    </pre>
+
+    <h2>Quick copy-paste command cheatsheet</h2>
+    <pre>
+# discover SNMP responders (low-noise)
+nmap -sU -p161 --script=snmp-info --script-args 'timeout=500ms' <target>
+
+# quick read with common community
+snmpwalk -v2c -c public <target> 1
+
+# pull interface list & addresses
+snmpwalk -v2c -c public <target> 1.3.6.1.2.1.2
+
+# ARP / routing tables
+snmpwalk -v2c -c public <target> 1.3.6.1.2.1.4
+
+# enterprise MIBs (may reveal configs)
+snmpwalk -v2c -c public <target> 1.3.6.1.4.1
+
+# brute community strings with rate-limit / onesixtyone
+onesixtyone -c communities.txt <target>
+
+# nmap brute script (alternative)
+nmap -sU -p161 --script snmp-brute --script-args snmp-brute.communitiesdb=communities.txt <target>
+
+# test SNMPv3 discovery (note: SNMPv3 requires different handling)
+nmap -sU -p161 --script snmp-info --script-args snmp.user=<username>,snmp.pass=<password> <target>
+    </pre>
+
+    <h2>Red-team competition tips</h2>
+    <ul>
+      <li>Prioritize quick wins: a single successful <code>snmpwalk</code> with <code>public</code> can immediately reveal pivot points.</li>
+      <li>Be noisy-aware: brute-forcing communities or aggressive SNMP SETs will often trigger blue-team alerts — use timing and narrow scope.</li>
+      <li>Search for enterprise OIDs after initial discovery — vendor MIBs commonly contain config fragments and credentials.</li>
+      <li>If you find write access, coordinate with teammates (or follow rules of engagement) — modifying device configs can break the target environment.</li>
+      <li>Log everything you pull (timestamps, OIDs, raw values) for scoring and reporting; SNMP artifacts are high-value evidence in CTF reports.</li>
+    </ul>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://tools.ietf.org/html/rfc3411" target="_blank" rel="noopener">RFC 3411 — SNMP Architecture (informational)</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/snmp-info.html" target="_blank" rel="noopener">Nmap NSE — snmp-info/snmp-brute</a></li>
+      <li><a href="https://www.snmplabs.com/projects/pysnmp/" target="_blank" rel="noopener">PySNMP / pysnmp docs (useful for scripted pulls)</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Ethics & Rules:</strong> This guidance is written from a red-team competition perspective — only perform these actions within the competition environment or on targets you are explicitly authorized to test. SNMP SET/write operations can be destructive; treat them as last-resort, score-hungry actions and follow the exercise rules of engagement.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
