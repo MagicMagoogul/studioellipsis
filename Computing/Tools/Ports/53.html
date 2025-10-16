@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>53 — DNS (Domain Name System)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 53 — DNS (Domain Name System)</h1>
+    <p>A guide to enumeration and exploitation of DNS services</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is DNS?</h2>
+    <p>
+      The Domain Name System (DNS) maps human-friendly domain names to IP addresses and provides other resource records (MX, TXT, NS, SOA, etc.). It typically runs on UDP/TCP port 53. DNS is critical infrastructure — misconfigurations (open zone transfers, recursive resolvers, weak DNSSEC) or protocol misuse (tunneling) can expose internal hosts, enable data exfiltration, or enable spoofing and phishing.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+- Discover DNS servers: nmap -sU -p 53 --script=dns-nsid,dns-recursion <target>
+- Identify authoritative nameservers (NS records): dig NS <domain> @<resolver>
+- Check public records: dig ANY, dig SOA, dig AXFR (zone transfer attempt)
+- Passive recon: search public sources for subdomains (crt.sh, Certificate Transparency, DNSDumpster)
+      </pre>
+      <p>
+        Start by identifying which servers answer for a domain (authoritative vs recursive). Record NS and SOA details to target later enumeration (AXFR attempts, zone walking).
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+- Zone transfer (AXFR): dig @<ns> <domain> AXFR
+- Enumerate records: dig A, AAAA, MX, TXT, SRV, PTR
+- DNS bruteforce/subdomain discovery: amass enum, subfinder, assetfinder, dnsenum
+- Zone walking on NSEC/NSEC3 when DNSSEC is misconfigured
+- Check for DNS recursion/open resolvers: dig @<resolver> whoami.akamai.net TXT
+- Use nmap NSE: nmap -sU -p 53 --script=dns-zone-transfer,dns-recursion,dns-nsec-enum <target>
+      </pre>
+      <p>
+        Look for subdomains, internal hostnames, mail server (MX) targets, SPF/TXT data (which can leak infrastructure), and any zone transfer that returns full DNS data.
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <pre>
+- If AXFR succeeds: download zone data and harvest internal hostnames, IPs, mail servers, and keys
+- Misconfigured recursion: abuse open resolver for reflection/amplification DDoS or cache poisoning attempts (authorized testing only)
+- DNS cache poisoning and spoofing (protocol-level weaknesses + race conditions)
+- DNS tunneling (data exfiltration/persistence): test with iodine, dnscat2, dns2tcp (use only in authorized labs)
+- Harvest TXT/SPF/DMARC to discover internal services and credentials
+      </pre>
+      <p>
+        Prioritize extracting hostnames and credentials referenced in DNS records. Zone transfers reveal internal structure; DNS tunneling may indicate existing exfil channels.
+      </p>
+    </details>
+
+    <details>
+      <summary>DNS Info — What to Look For</summary>
+      <ul>
+        <li>Successful AXFR (zone transfer) from authoritative NS</li>
+        <li>Open/recursive resolvers that answer for third-party queries</li>
+        <li>Exposed internal hostnames and private IPs in DNS records</li>
+        <li>TXT records leaking configuration or API keys (spfa, verification tokens)</li>
+        <li>DNSSEC misconfigurations (NSEC/NSEC3 zone walking)</li>
+        <li>Evidence of DNS tunneling (suspicious long/encoded subdomains)</li>
+      </ul>
+    </details>
+
+    <h2>Tools required</h2>
+    <pre>
+sudo apt install dnsutils nmap dnsrecon dnsenum amass subfinder massdns
+# Optional / advanced:
+# - fierce (legacy DNS scanner)
+# - dnscat2 / iodine / dns2tcp (DNS tunnel testing - authorized use only)
+# - whois, curl, jq for parsing public data
+    </pre>
+
+    <h2>Quick copy-paste command cheatsheet</h2>
+    <pre>
+# basic discovery
+nmap -sU -p 53 --script=dns-recursion,dns-nsid <target>
+
+# authoritative nameservers
+dig NS <domain>
+
+# zone transfer (AXFR)
+dig @<ns> <domain> AXFR
+
+# list records
+dig A <domain>
+dig MX <domain>
+dig TXT <domain>
+
+# nmap NSE zone transfer + DNS scripts
+nmap -sU -p 53 --script=dns-zone-transfer,dns-recursion,dns-nsec-enum <target>
+
+# subdomain enum
+amass enum -d <domain>
+subfinder -d <domain> -silent
+
+# brute / wordlist
+dnsenum --dnsserver <ns> <domain>
+
+# check for DNS tunneling indicators (look for very long/encoded subdomains)
+# run mass subdomain discovery and inspect results for long labels
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://datatracker.ietf.org/doc/html/rfc1035" target="_blank" rel="noopener">RFC 1035 — DNS</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/dns-zone-transfer.html" target="_blank" rel="noopener">Nmap NSE — dns-zone-transfer</a></li>
+      <li><a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-dns" target="_blank" rel="noopener">HackTricks — DNS pentesting</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> Use these techniques only on systems and domains you own or are explicitly authorized to test. DNS attacks, unauthorized zone transfers, spoofing, tunneling, or poisoning are illegal and unethical when performed without permission.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
