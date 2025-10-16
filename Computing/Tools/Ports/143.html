@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>143 — IMAP (Internet Message Access Protocol)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>143 — IMAP (Internet Message Access Protocol)</h1>
+    <p>A guide to enumeration and assessment of IMAP mail services</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is IMAP?</h2>
+    <p>
+      IMAP (Internet Message Access Protocol) is a protocol for accessing and managing email on a remote server while keeping messages on the server. It normally listens on TCP port 143 (plaintext + STARTTLS) and on 993 for IMAPS (TLS). IMAP allows clients to list mailboxes, fetch message headers/bodies, and manipulate flags—making it a high-value target if authentication or transport security is weak.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+- Service discovery & banner: nmap -sV -p 143 [target]
+- Check STARTTLS/IMAPS support: nmap -p 143 --script ssl-enum-ciphers,imap-capabilities [target]
+- Check IMAP on 993 (IMAPS): nmap -sV -p 993 [target]
+- Passive recon: lookup MX records (dig MX <domain>) to find mail hosts
+      </pre>
+      <p>
+        Record server software (Dovecot, Courier, Microsoft Exchange), supported AUTH mechanisms, and whether TLS (STARTTLS/IMAPS) is enforced.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+- Banner & CAPABILITY: use openssl / nc to connect and read server greeting and CAPABILITY list
+    openssl s_client -starttls imap -connect <target>:143 -crlf
+- List mailboxes and capabilities (manual IMAP commands):
+    A001 CAPABILITY
+    A002 LIST "" "*"
+- Check AUTH mechanisms (PLAIN, LOGIN, CRAM-MD5, DIGEST-MD5, NTLM, GSSAPI)
+- Automated enumeration:
+    nmap --script=imap-capabilities,imap-brute -p 143 <target>
+- Username discovery: use timing/response differences with valid/invalid attempts or use mailbox naming conventions discovered via MX/OSINT
+      </pre>
+      <p>
+        Look for servers that allow plaintext authentication (AUTH PLAIN/LOGIN over unencrypted channel) or accept weak mechanisms. Note support for SASL/NTLM/GSSAPI which affects brute-force strategies.
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <pre>
+- Credential harvesting (authorized only): use valid creds to LIST/RETR mailboxes and download messages (RETR)
+- Brute force / credential stuffing (authorized only):
+    hydra -L users.txt -P passwords.txt imap://<target>
+- Exploit STARTTLS downgrade or MITM in untrusted networks to capture plaintext auth (authorized lab use)
+- If private keys or reset emails exist in mailboxes, use them to pivot to other services
+- Use Python's imaplib for scripted retrieval once credentials obtained
+      </pre>
+      <p>
+        Focus on acquiring mailbox contents that contain secrets (password resets, API keys), and on finding credentials that work for other services. Respect legal/ethical boundaries—do not access mailboxes without permission.
+      </p>
+    </details>
+
+    <details>
+      <summary>IMAP Info — What to Look For</summary>
+      <ul>
+        <li>Plaintext authentication allowed on port 143 without STARTTLS</li>
+        <li>Weak AUTH mechanisms (AUTH LOGIN/PLAIN) exposed over non-TLS</li>
+        <li>IMAPS (993) missing or misconfigured (no enforced TLS)</li>
+        <li>Mailboxes containing password resets, tokens, or sensitive attachments</li>
+        <li>Support for CRAM-MD5/NTLM/GSSAPI which may require different tooling</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required</h2>
+    <pre>
+sudo apt install nmap openssl netcat hydra python3
+# Useful Python tooling: imaplib (stdlib), imapclient
+# Nmap NSE scripts: imap-capabilities, imap-brute
+    </pre>
+
+    <h2>Quick copy-paste command cheatsheet</h2>
+    <pre>
+# discovery & capabilities
+nmap -sV -p 143 --script=imap-capabilities,imap-brute <target>
+nmap -sV -p 993 <target>   # IMAPS
+
+# check STARTTLS & banner
+openssl s_client -starttls imap -connect <target>:143 -crlf
+
+# manual IMAP session (example)
+# connect with nc and issue IMAP commands
+nc <target> 143
+A001 CAPABILITY
+A002 LIST "" "*"
+
+# brute-force (authorized only)
+hydra -L users.txt -P passwords.txt imap://<target>
+
+# Python quick retrieval (example - authorized only)
+python3 - <<PY
+import imaplib
+M = imaplib.IMAP4('<target>')
+M.login('username','password')
+M.select('INBOX')
+typ, data = M.search(None, 'ALL')
+for num in data[0].split():
+    typ, msg = M.fetch(num, '(RFC822)')
+    print(msg[0][1][:200])  # preview
+M.logout()
+PY
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://tools.ietf.org/html/rfc3501" target="_blank" rel="noopener">RFC 3501 — IMAP4rev1</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/imap-capabilities.html" target="_blank" rel="noopener">Nmap NSE — imap-capabilities / imap-brute</a></li>
+      <li><a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-imap" target="_blank" rel="noopener">HackTricks — IMAP pentesting</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> Use these techniques only on systems and mailboxes you own or are explicitly authorized to test. Accessing others' email or intercepting credentials without permission is illegal and unethical.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
