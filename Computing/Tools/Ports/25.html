@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>25 — SMTP (Mail Transfer)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 25 — SMTP (Simple Mail Transfer Protocol)</h1>
+    <p>A guide to enumeration and exploitation of the SMTP mail service</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is SMTP?</h2>
+    <p>
+      SMTP (Simple Mail Transfer Protocol) is a standard protocol for sending and routing email messages between mail servers.
+      It operates over TCP port 25 by default. While essential for mail delivery, open or misconfigured SMTP servers can leak
+      sensitive information such as usernames or allow unauthorized message relay (spam). Enumeration focuses on identifying
+      open relays, user enumeration, and potential spoofing opportunities.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+# Identify SMTP service and version
+nmap -sV -p 25 [targetip]
+
+# Use NSE scripts for additional details
+nmap -p 25 --script smtp-commands,smtp-open-relay,smtp-enum-users [targetip]
+      </pre>
+      <p>
+        These scans detect the SMTP service, banner information (e.g., Postfix, Exim, Sendmail), and whether the server
+        supports potentially dangerous commands like <code>VRFY</code> or <code>EXPN</code>.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <p>
+        Enumeration focuses on discovering valid users, open relay status, and potential spoofing misconfigurations.
+      </p>
+      <pre>
+# Connect manually to SMTP and grab the banner
+nc [targetip] 25
+
+# Use HELO or EHLO to identify yourself to the server
+HELO example.com
+EHLO example.com
+
+# Test user enumeration
+VRFY root
+VRFY admin
+EXPN users
+      </pre>
+      <p>
+        The <code>VRFY</code> and <code>EXPN</code> commands can be used to validate existing user accounts.
+        If successful, the server will return responses confirming which users exist.
+      </p>
+      <pre>
+# Automated user enumeration
+smtp-user-enum -M VRFY -U users.txt -t [targetip]
+      </pre>
+      <p>
+        This tool automates enumeration through valid SMTP responses. Use only during authorized testing.
+      </p>
+      <pre>
+# Check if open relay is allowed
+telnet [targetip] 25
+MAIL FROM: test@example.com
+RCPT TO: test@external.com
+DATA
+This is a relay test.
+.
+QUIT
+      </pre>
+      <p>
+        If the server accepts mail to external domains without authentication, it is an open relay vulnerability.
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <p>
+        Exploitation focuses on leveraging configuration weaknesses or gathered credentials.
+      </p>
+      <pre>
+# Relay abuse (authorized testing only)
+swaks --to test@victim.com --from admin@[target] --server [targetip] --header "Subject: SMTP test" --body "Hello!"
+      </pre>
+      <p>
+        This command uses <code>swaks</code> to simulate an SMTP relay attempt. Abuse of open relays allows spam or spoofing.
+      </p>
+      <pre>
+# Credential brute-force (only with explicit authorization)
+hydra -L users.txt -P passwords.txt smtp://[targetip]
+      </pre>
+      <p>
+        Some SMTP servers accept authenticated logins via <code>AUTH LOGIN</code>. Weak or reused credentials may allow access.
+      </p>
+      <pre>
+# Post-exploitation actions
+- Search for message queues, mail spools, or logs containing sensitive data
+- Extract credentials, API keys, or internal addresses from mail messages
+      </pre>
+    </details>
+
+    <details>
+      <summary>SMTP Info — What to Look For</summary>
+      <ul>
+        <li>Banner information revealing mail software and version</li>
+        <li>VRFY/EXPN commands that confirm valid usernames</li>
+        <li>Misconfigured open mail relays</li>
+        <li>Weak or default SMTP authentication credentials</li>
+        <li>Email spoofing or relay possibilities for phishing</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required</h2>
+    <pre>
+sudo apt install nmap netcat swaks hydra smtp-user-enum telnet
+    </pre>
+
+    <h2>Quick Copy-Paste Command Cheatsheet</h2>
+    <pre>
+# Recon
+nmap -p 25 -sV --script smtp-commands,smtp-open-relay [target]
+
+# Manual check
+nc [target] 25
+HELO test
+VRFY root
+
+# User enumeration
+smtp-user-enum -M VRFY -U users.txt -t [target]
+
+# Brute-force
+hydra -L users.txt -P passwords.txt smtp://[target]
+
+# Relay test
+swaks --to victim@test.com --from admin@[target] --server [target]
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-smtp" target="_blank">1 — HackTricks: SMTP Pentesting</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/smtp-enum-users.html" target="_blank">2 — Nmap SMTP Scripts</a></li>
+      <li><a href="https://www.geeksforgeeks.org/simple-mail-transfer-protocol-smtp/" target="_blank">3 — GeeksforGeeks: SMTP Overview</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> Use these techniques only on systems you own or are explicitly authorized to test. Unauthorized access is illegal and unethical.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
