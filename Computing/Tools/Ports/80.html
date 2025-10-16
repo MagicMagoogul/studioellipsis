@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>80 — HTTP (Web)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 80 — HTTP (Web)</h1>
+    <p>A guide to enumeration and exploitation of HTTP services</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is HTTP?</h2>
+    <p>
+      HTTP (Hypertext Transfer Protocol) is the foundational protocol for the web, typically served over TCP port 80 (unencrypted). It handles requests and responses between clients and web servers and exposes application logic, content, and APIs. Web applications on HTTP are frequent targets due to complex server-side logic, user input, and third-party components.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+- Simple discovery: nmap -p 80 -sV --script=http-enum <target>
+- Banner & server detection: curl -I http://<target>
+- Crawl the site for structure and endpoints: gobuster dir -u http://<target> -w /usr/share/wordlists/dirb/common.txt
+- Passive recon: check crt.sh, Wayback Machine, Google dorks for known endpoints
+      </pre>
+      <p>
+        Start by identifying server software (Apache, Nginx, IIS), visible directories, and basic endpoints. Record robots.txt, sitemap.xml, and any API routes.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+- Directory brute-force: gobuster dir -u http://<target> -w wordlist.txt
+- Virtual host discovery: vhost discovery with ffuf/gobuster vhost mode
+- Parameter discovery and fuzzing: wfuzz / ffuf to find query parameters and hidden endpoints
+- Fingerprinting web frameworks: whatweb http://<target> / wappalyzer
+- Check for common files: robots.txt, .git/, backup files (.bak, .zip), .env exposures
+- Automated scanning: nikto -h http://<target> and OWASP ZAP / Burp scan (authorized only)
+      </pre>
+      <p>
+        Enumerate input fields, cookies, auth endpoints, file upload features, and API endpoints. Harvest version numbers and third-party components for CVE checks.
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <pre>
+- Test for common web flaws: XSS, SQLi, CSRF, LFI/RFI, command injection, auth bypass
+- SQL Injection automated check: sqlmap -u "http://<target>/page.php?id=1" --batch --dbs
+- XSS testing: inject payloads in parameters and observe reflected output or stored contexts
+- File upload abuse: test upload restrictions, content-type, and file parsing vulnerabilities
+- Authentication attacks: bruteforce/login enumeration with hydra or Burp Intruder (authorized)
+- Exploit misconfigurations: exposed admin panels, default credentials, exposed backups, or .git leaks
+- Post-exploitation: plant webshell (only in authorized tests), pivot to internal services
+      </pre>
+      <p>
+        Exploitation must be careful and authorized. Focus on retrieving sensitive data (credentials, tokens), and use discovered vulnerabilities to move laterally when permitted.
+      </p>
+    </details>
+
+    <details>
+      <summary>HTTP Info — What to Look For</summary>
+      <ul>
+        <li>Exposed admin interfaces and dashboards</li>
+        <li>Unprotected API endpoints returning sensitive data</li>
+        <li>Input fields vulnerable to XSS, SQLi, or command injection</li>
+        <li>Insecure file uploads and backup exposures (.git, .env)</li>
+        <li>Misconfigured CORS allowing token theft</li>
+        <li>Debug pages, stack traces, or verbose error messages</li>
+      </ul>
+    </details>
+
+    <h2>Tools required</h2>
+    <pre>
+sudo apt install nmap gobuster ffuf curl whatweb nikto sqlmap hydra
+# Optional / advanced:
+# - Burp Suite (Community/Pro)
+# - OWASP ZAP
+# - wafw00f (WAF detection)
+# - wfuzz / ffuf for fuzzing
+    </pre>
+
+    <h2>Quick copy-paste command cheatsheet</h2>
+    <pre>
+# discovery & banner
+nmap -p 80 -sV --script=http-enum <target>
+curl -I http://<target>
+
+# directory brute-force
+gobuster dir -u http://<target> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+
+# vhost discovery
+gobuster vhost -u http://<target> -w vhosts.txt
+
+# parameter fuzzing (example)
+ffuf -u http://<target>/page.php?id=FUZZ -w params.txt
+
+# XSS quick test (reflected)
+# inject into query and open in browser / proxy
+?q=<script>alert(1)</script>
+
+# SQLi quick test (automated)
+sqlmap -u "http://<target>/page.php?id=1" --batch --dbs
+
+# scan with nikto
+nikto -h http://<target>
+
+# WAF detection
+wafw00f http://<target>
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://owasp.org/www-project-top-ten/" target="_blank" rel="noopener">OWASP Top 10 — common web vulnerabilities</a></li>
+      <li><a href="https://nmap.org/nsedoc/categories/http.html" target="_blank" rel="noopener">Nmap HTTP NSE scripts</a></li>
+      <li><a href="https://portswigger.net/burp" target="_blank" rel="noopener">Burp Suite — Web security testing</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> Use these techniques only on web servers and applications you own or are explicitly authorized to test. Unauthorised scanning, exploitation, or data access is illegal and unethical.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
