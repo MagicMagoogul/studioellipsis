@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>22 — SSH (Modern)</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>22 — SSH (Secure Shell)</title>
   <style>
     :root {
       --neon: #00ff99;
@@ -21,53 +21,14 @@
     }
 
     header {
-      position: relative;
       text-align: center;
-      padding: 2.25rem 1rem 2.5rem;
+      padding: 2rem;
       border-bottom: var(--border);
     }
 
     header h1 {
       margin: 0;
       font-size: 2.4rem;
-    }
-
-    .subtitle {
-      margin: 0.45rem 0 0;
-      font-size: 1rem;
-      opacity: 0.95;
-    }
-
-    .back-arrow {
-      position: absolute;
-      left: 12px;
-      top: calc(100% - 0.6rem);
-      transform: translateY(-20%);
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 6px;
-      text-decoration: none;
-      color: var(--neon);
-      text-shadow: 0 0 6px var(--neon);
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(0,255,153,0.08);
-      font-weight: 700;
-      font-family: var(--font);
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 640px) {
-      .back-arrow {
-        left: 8px;
-        top: calc(100% + 6px);
-        transform: none;
-        padding: 5px 8px;
-        font-size: 0.95rem;
-      }
-
-      header {
-        padding: 1.6rem 0.8rem 2.2rem;
-      }
     }
 
     main {
@@ -119,83 +80,137 @@
     a:hover {
       text-shadow: 0 0 10px var(--neon);
     }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+
+    .nav-link:hover {
+      text-shadow: 0 0 10px var(--neon);
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Port 22 — SSH (Modern)</h1>
-    <p class="subtitle">A guide to enumeration and exploitation</p>
-    <a href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html" class="back-arrow">&lt;--</a>
+    <h1>Port 22 — SSH (Secure Shell)</h1>
+    <p>A guide to enumeration and exploitation of the SSH service</p>
+    <nav>
+      <a href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html" class="nav-link"><--</a>
+    </nav>
   </header>
 
   <main>
     <h2>0) What is SSH?</h2>
     <p>
-      SSH (Secure Shell) is a protocol for secure remote access to systems, typically over port 22. It provides encrypted communication for shell access, file transfers (SFTP/SCP), and tunneling. Exploiting SSH can grant unauthorized access to systems or sensitive data.
+      Secure Shell (SSH) is a cryptographic network protocol that allows secure remote access to systems and services over an unsecured network. It typically runs on port 22 and is used for administration, file transfers (SCP/SFTP), and tunneling. Misconfigurations or weak credentials often make SSH a prime target during penetration testing.
     </p>
 
     <details open>
       <summary>1) Recon Phase</summary>
+      <h3>Identify SSH service and version information.</h3>
       <pre>
 nmap -sV -p 22 [targetip]
-nmap --script ssh2-enum-algos [targetip]
-nmap --script ssh-hostkey --script-args ssh_hostkey=full [targetip]
       </pre>
       <p>
-        Use <code>nmap</code> to identify the SSH service version and supported algorithms. The <code>ssh2-enum-algos</code> script checks for weak ciphers or key exchange methods, while <code>ssh-hostkey</code> retrieves the server's public key for fingerprinting.
+        Detects whether SSH is open and retrieves version details such as OpenSSH version and OS hints.
+      </p>
+      <pre>
+nmap -p 22 --script ssh-hostkey,ssh2-enum-algos [targetip]
+      </pre>
+      <p>
+        Gathers supported encryption algorithms, authentication methods, and host key fingerprints.
       </p>
     </details>
 
     <details>
       <summary>2) Enumeration Phase</summary>
+      <p>
+        Enumeration focuses on identifying potential weak points in configuration, user credentials, and algorithms.
+      </p>
       <pre>
-ssh [targetip] -l [username]
-hydra -L users.txt -P passwords.txt ssh://[targetip]
-nmap --script ssh-auth-methods --script-args="ssh.user=[username]" [targetip]
+# Attempt connection
+ssh [user]@[targetip]
+
+# Banner grabbing
+nc [targetip] 22
       </pre>
       <p>
-        Test for valid usernames with <code>ssh</code> or enumerate supported authentication methods using <code>nmap</code>. Use <code>hydra</code> for authorized brute-force testing to identify weak passwords. Be cautious to avoid account lockouts or IP bans.
+        Look for version information (e.g., “OpenSSH 7.2p2 Ubuntu 4ubuntu2.8”) — older versions may be vulnerable.
+      </p>
+      <pre>
+# User enumeration (with Metasploit)
+msfconsole
+use auxiliary/scanner/ssh/ssh_enumusers
+set RHOSTS [targetip]
+set USER_FILE users.txt
+run
+      </pre>
+      <p>
+        Checks which usernames are valid through SSH response timing differences.
+      </p>
+      <pre>
+# Brute force login (authorized testing only)
+hydra -L users.txt -P passwords.txt ssh://[targetip]
+      </pre>
+      <p>
+        Hydra attempts username/password combinations. Use carefully and only when permitted.
       </p>
     </details>
 
     <details>
       <summary>3) Exploitation Phase</summary>
+      <p>
+        Exploitation depends on authentication weaknesses or misconfigurations discovered earlier.
+      </p>
       <pre>
-msfconsole
-use auxiliary/scanner/ssh/ssh_version
-set RHOSTS [targetip]
-run
-use auxiliary/scanner/ssh/ssh_login
-set RHOSTS [targetip]
-set USERNAME [username]
-set PASSWORD [password]
-run
+# Connect with discovered credentials
+ssh [username]@[targetip]
       </pre>
       <p>
-        In Metasploit, scan for SSH version details or attempt login with known credentials. If weak credentials are found, you can gain shell access. Check for outdated SSH versions vulnerable to known exploits (e.g., CVE-2016-6210 for user enumeration).
+        After login, check system information, privilege escalation paths, and file permissions.
+      </p>
+      <pre>
+# Exploit weak key authentication
+# If an id_rsa key is found, use:
+chmod 600 id_rsa
+ssh -i id_rsa [username]@[targetip]
+      </pre>
+      <p>
+        Use found private keys or credentials from other compromised services. If the SSH server allows root login, that’s a critical misconfiguration.
+      </p>
+      <pre>
+# Exploit older SSH versions (rare)
+searchsploit openssh
+      </pre>
+      <p>
+        Some outdated SSH versions may have remote code execution or privilege escalation vulnerabilities.
       </p>
     </details>
 
     <details>
       <summary>SSH Info — What to Look For</summary>
       <ul>
-        <li>Weak or default credentials (e.g., root:admin)</li>
-        <li>Outdated SSH versions with known vulnerabilities</li>
-        <li>Weak key exchange algorithms or ciphers</li>
-        <li>Misconfigured SSH allowing password-based authentication instead of key-based</li>
+        <li>Weak or default credentials</li>
+        <li>Outdated OpenSSH versions with known CVEs</li>
+        <li>Publicly accessible private keys or authorized_keys files</li>
+        <li>Root login allowed via SSH</li>
+        <li>Weak or deprecated encryption algorithms</li>
       </ul>
     </details>
 
     <h2>Tools Required</h2>
     <pre>
-sudo apt install nmap hydra openssh-client
+sudo apt install nmap hydra openssh-client metasploit-framework netcat searchsploit
     </pre>
 
     <h2>Citations</h2>
     <ul>
-      <li><a href="https://www.hackingarticles.in/comprehensive-guide-on-ssh-enumeration/" target="_blank">Hacking Articles: SSH Enumeration Guide</a></li>
-      <li><a href="https://nmap.org/nsedoc/scripts/ssh2-enum-algos.html" target="_blank">Nmap SSH2 Enum Algos Script</a></li>
-      <li><a href="https://www.offensive-security.com/metasploit-unleashed/ssh-scanning/" target="_blank">Offensive Security: SSH Scanning</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/ssh2-enum-algos.html" target="_blank">1 — Nmap SSH NSE Scripts</a></li>
+      <li><a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-ssh" target="_blank">2 — HackTricks: SSH Pentesting</a></li>
+      <li><a href="https://www.geeksforgeeks.org/ssh-protocol-in-computer-network/" target="_blank">3 — GeeksforGeeks: SSH Protocol Overview</a></li>
     </ul>
   </main>
 
