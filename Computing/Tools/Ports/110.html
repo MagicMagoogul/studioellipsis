@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>110 — POP3 (Modern)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+    }
+
+    header {
+      position: relative;
+      text-align: center;
+      padding: 2.25rem 1rem 2.5rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    .subtitle {
+      margin: 0.45rem 0 0;
+      font-size: 1rem;
+      opacity: 0.95;
+    }
+
+    .back-arrow {
+      position: absolute;
+      left: 12px;
+      top: calc(100% - 0.6rem);
+      transform: translateY(-20%);
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--neon);
+      text-shadow: 0 0 6px var(--neon);
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(0,255,153,0.08);
+      font-weight: 700;
+      font-family: var(--font);
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 640px) {
+      .back-arrow {
+        left: 8px;
+        top: calc(100% + 6px);
+        transform: none;
+        padding: 5px 8px;
+        font-size: 0.95rem;
+      }
+
+      header {
+        padding: 1.6rem 0.8rem 2.2rem;
+      }
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.6;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.5rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a {
+      color: var(--neon);
+    }
+
+    a:hover {
+      text-shadow: 0 0 10px var(--neon);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 110 — POP3 (Modern)</h1>
+    <p class="subtitle">A guide to enumeration and exploitation</p>
+    <a href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html" class="back-arrow">&lt;--</a>
+  </header>
+
+  <main>
+    <h2>0) What is POP3?</h2>
+    <p>
+      POP3 (Post Office Protocol version 3) is a standard protocol used for retrieving emails from a mail server. It operates on port 110 (or 995 for POP3S with SSL/TLS). Exploiting POP3 can lead to unauthorized access to email accounts, sensitive data exposure, or credential harvesting.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+nmap -sV -p 110,995 [targetip]
+nmap --script pop3-capabilities [targetip]
+nmap --script pop3-ntlm-info [targetip]
+      </pre>
+      <p>
+        Use <code>nmap</code> to detect the POP3 service version and check for SSL/TLS support. Scripts like <code>pop3-capabilities</code> reveal server features, and <code>pop3-ntlm-info</code> may expose domain or authentication details if NTLM is enabled.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+telnet [targetip] 110
+USER [username]
+PASS [password]
+LIST
+openssl s_client -connect [targetip]:995
+hydra -L users.txt -P passwords.txt pop3://[targetip]
+      </pre>
+      <p>
+        Connect via <code>telnet</code> or <code>openssl</code> to test for valid credentials or enumerate email lists. Use <code>hydra</code> for authorized brute-force testing to identify weak passwords. Be cautious with brute-forcing to avoid account lockouts.
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <pre>
+msfconsole
+use auxiliary/scanner/pop3/pop3_version
+set RHOSTS [targetip]
+run
+use auxiliary/client/pop3/pop3_fetch
+set RHOSTS [targetip]
+set USERNAME [username]
+set PASSWORD [password]
+run
+      </pre>
+      <p>
+        In Metasploit, scan for POP3 service details or attempt to retrieve emails with known credentials. Weak or default credentials can allow access to sensitive email content. Ensure proper authorization before testing.
+      </p>
+    </details>
+
+    <details>
+      <summary>POP3 Info — What to Look For</summary>
+      <ul>
+        <li>Unencrypted POP3 (port 110) exposing credentials in plaintext</li>
+        <li>Weak or default credentials for email accounts</li>
+        <li>Misconfigured servers allowing anonymous access</li>
+        <li>Outdated POP3 servers vulnerable to known exploits (e.g., buffer overflows)</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required</h2>
+    <pre>
+sudo apt install nmap hydra openssl telnet
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://www.hackingarticles.in/a-detailed-guide-on-pop3-enumeration/" target="_blank">Hacking Articles: POP3 Enumeration Guide</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/pop3-capabilities.html" target="_blank">Nmap POP3 Capabilities Script</a></li>
+      <li><a href="https://www.offensive-security.com/metasploit-unleashed/pop3-scanning/" target="_blank">Offensive Security: POP3 Scanning</a></li>
+    </ul>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
