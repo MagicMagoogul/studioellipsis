@@ -153,4 +153,76 @@
 - Credential harvesting: if weak creds found, authenticate and download mailboxes (RETR)
 - APOP: if supported and credentials can be guessed/extracted from zone files, use APOP flow
 - Brute force (authorized only): hydra -L users.txt -P passwords.txt pop3://[target]
-- If mailboxes contain sensitive data (password resets, API keys), pivot using discovere
+- If mailboxes contain sensitive data (password resets, API keys), pivot using discovered credentials
+- Man-in-the-middle (authorized lab): intercept plaintext POP3 to capture credentials (on untrusted networks)
+- Abuse mail retrieval to exfiltrate sensitive messages or to find tokens/links for lateral movement
+      </pre>
+      <p>
+        Prioritize collecting credentials and messages that contain secrets. If server allows deletion (DELE), be careful—do not delete during assessment unless explicitly authorized.
+      </p>
+    </details>
+
+    <details>
+      <summary>POP3 Info — What to Look For</summary>
+      <ul>
+        <li>Plaintext USER/PASS authentication (no TLS) on port 110</li>
+        <li>Presence of POP3S (port 995) or STARTTLS support</li>
+        <li>APOP support listed in banner (timestamp + MD5 challenge)</li>
+        <li>Mailboxes containing password reset emails, API keys, or onboarding messages</li>
+        <li>Weak or reused credentials across services</li>
+        <li>Ability to download many messages (large mailboxes may contain secrets)</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required</h2>
+    <pre>
+sudo apt install nmap netcat telnet hydra swaks openssl
+# Optional / helpful:
+# - fetchmail, getmail (mail retrieval)
+# - pop3scan / pop3client scripts
+# - Python's poplib for scripted retrieval
+    </pre>
+
+    <h2>Quick copy-paste command cheatsheet</h2>
+    <pre>
+# service discovery
+nmap -sV -p 110,995 --script pop3-capabilities,pop3-brute <target>
+
+# banner grab (plaintext)
+nc <target> 110
+# then issue: USER test / PASS test
+
+# test POP3S (TLS)
+openssl s_client -connect <target>:995 -crlf
+
+# brute-force (authorized only)
+hydra -L users.txt -P passwords.txt pop3://<target>
+
+# automated retrieval with Python poplib (example)
+python3 - <<PY
+import poplib
+p = poplib.POP3('<target>')
+p.user('username'); p.pass_('password')
+print(p.stat()); print(p.list())
+p.quit()
+PY
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://datatracker.ietf.org/doc/html/rfc1939" target="_blank" rel="noopener">RFC 1939 — Post Office Protocol - Version 3</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/pop3-capabilities.html" target="_blank" rel="noopener">Nmap NSE — pop3-capabilities</a></li>
+      <li><a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-pop3" target="_blank" rel="noopener">HackTricks — POP3 pentesting</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> Use these techniques only on systems and mailboxes you own or are explicitly authorized to test. Capturing or accessing others' email is illegal and unethical without permission.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
