@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>139 — NETBIOS / SMB (Legacy)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 139 — NETBIOS / SMB (Legacy)</h1>
+    <p>A guide to enumeration and exploitation of legacy NetBIOS / SMB over NetBIOS</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is NETBIOS / SMB over NetBIOS?</h2>
+    <p>
+      Port 139 historically carries SMB traffic encapsulated over NetBIOS (NetBIOS Session Service). It's used by older Windows networks for file/print sharing and name services (NetBIOS name resolution). Many modern systems use SMB directly on TCP/445, but 139 remains relevant on legacy or mixed environments. It exposes shares, NetBIOS names, and RPC interfaces — often revealing hosts, users, and share configurations.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+- Discover port 139 and related NetBIOS services: nmap -sV -p 139,137,138 <target>
+- NetBIOS name scan: nmap --script nbstat.nse -p 137 <target>
+- Enumerate available NetBIOS names and broadcasts
+- Passive recon: check Windows/legacy device ranges and SMB/NetBIOS footprints
+      </pre>
+      <p>
+        Start with combined scanning of UDP 137/138 (NetBIOS name/service) and TCP 139 to map legacy SMB endpoints and NetBIOS names that help target enumeration.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+- smbclient -L //<target> -U ""            # list shares via NetBIOS/SMB (anonymous)
+- enum4linux -a <target>                   # comprehensive SMB/NetBIOS enumeration
+- nmblookup -A <target>                    # query NetBIOS name table and MAC
+- nbtscan <target-range>                   # scan NetBIOS names across a subnet
+- rpcclient -U "" <target>                 # RPC enumeration over SMB/NetBIOS
+- smbmap -H <target>                       # list shares and permissions (when SMB accessible)
+      </pre>
+      <p>
+        Look for NetBIOS names, domain/workgroup info, open/writable shares, and user lists returned by RPC or SMB over NetBIOS. NetBIOS can reveal hostnames and mapped drives useful for follow-up.
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <pre>
+- Connect to discovered shares:
+    smbclient //<target>/<share> -U ""        # download readable files (authorized only)
+
+- Test for null sessions (legacy systems may allow):
+    smbclient -N -L //<target>
+
+- Leverage MS08-067 / older NetBIOS-related exploits on unpatched systems (use exploit frameworks, only authorized)
+- Use harvested credentials to access SMB on 445 or authenticate to other services
+- Pivot: escalate to domain services using SYSVOL/NETLOGON artifacts if available
+      </pre>
+      <p>
+        Prioritize data extraction from exposed shares and harvesting of credentials or scripts in SYSVOL/NETLOGON. Legacy services are more likely to be vulnerable to older exploits—only use those in authorized tests.
+      </p>
+    </details>
+
+    <details>
+      <summary>NETBIOS/SMB Info — What to Look For</summary>
+      <ul>
+        <li>NetBIOS names revealing hostnames, workgroup/domain names</li>
+        <li>Null session support (anonymous access) — legacy high-risk</li>
+        <li>Open or writable shares accessible via SMB over NetBIOS</li>
+        <li>SYSVOL / NETLOGON contents on domain controllers</li>
+        <li>Old/unpatched Windows versions or services exposing known CVEs</li>
+        <li>Mapped drive info or scripts that include plaintext credentials</li>
+      </ul>
+    </details>
+
+    <h2>Tools required</h2>
+    <pre>
+sudo apt install nmap smbclient smbmap enum4linux nbtscan nmblookup rpcbind
+# Optional / advanced:
+# - Metasploit (for legacy exploit modules; authorized only)
+# - smbclient/samba-utils (rpcclient, smbstatus)
+# - Responder (LLMNR/NetBIOS poisoning in lab environments; authorized use only)
+    </pre>
+
+    <h2>Quick copy-paste command cheatsheet</h2>
+    <pre>
+# discovery (NetBIOS + SMB)
+nmap -sU -p 137,138 --script nbstat.nse <target>
+nmap -sV -p 139,445 <target>
+
+# NetBIOS name lookup
+nmblookup -A <target>
+
+# scan NetBIOS names across a subnet
+nbtscan <subnet>
+
+# SMB/NetBIOS enumeration
+enum4linux -a <target>
+smbclient -L //<target> -U ""
+smbclient -N -L //<target>   # null session test
+
+# list shares / permissions
+smbmap -H <target>
+
+# RPC user enumeration
+rpcclient -U "" <target>
+rpcclient> enumdomusers
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://0xdf.gitlab.io/cheatsheets/smb-enum#/" target="_blank" rel="noopener">SMB enumeration cheatsheet</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/nbstat.html" target="_blank" rel="noopener">Nmap NSE — nbstat</a></li>
+      <li><a href="https://docs.rapid7.com/insightvm/legacy-smb-protocols/" target="_blank" rel="noopener">Notes on legacy SMB/NetBIOS risks</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> Use these techniques only on systems you own or are explicitly authorized to test. Testing NetBIOS/legacy SMB can impact older systems—exercise caution and get permission.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
