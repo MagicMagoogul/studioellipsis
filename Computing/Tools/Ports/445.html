@@ -1,220 +1,316 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>445 — SMB (Modern)</title>
+
   <style>
-    :root {
+    :root{
       --neon: #00ff99;
       --bg: #000;
       --border: 1px solid var(--neon);
-      --font: 'Courier New', Courier, monospace;
+      --font: "Courier New", Courier, monospace;
+      --glass: rgba(0,0,0,0.35);
     }
 
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--neon);
-      font-family: var(--font);
-      text-shadow: 0 0 5px var(--neon);
+    /* Global */
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--neon);
+      font-family:var(--font);
+      -webkit-font-smoothing:antialiased;
+      text-shadow:0 0 5px var(--neon);
+      line-height:1.6;
     }
 
-    /* make header a positioning context so the arrow can be absolutely positioned relative to it */
-    header {
-      position: relative;
-      text-align: center;
-      padding: 2.25rem 1rem 2.5rem; /* a bit taller to give space for the arrow */
-      border-bottom: var(--border);
+    a{ color:var(--neon); text-decoration:none; }
+    a:hover{ text-shadow:0 0 10px var(--neon); }
+
+    /* Header + centered arrow */
+    header{
+      position:relative;                 /* positioning context for arrow */
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:2.25rem 1rem 2.8rem;
+      border-bottom:var(--border);
+      box-sizing:border-box;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 2.4rem;
+    header h1{
+      margin:0;
+      font-size:2.6rem;
+      letter-spacing:1px;
     }
 
-    /* subtitle wrapper keeps subtitle centered and gives a hook */
-    .subtitle {
-      margin: 0.45rem 0 0;
-      font-size: 1rem;
-      opacity: 0.95;
+    .subtitle{
+      margin:0.45rem 0 0;
+      font-size:1rem;
+      opacity:0.95;
     }
 
-    /* the arrow: pinned to the left page edge and vertically placed just below the subtitle */
-    .back-arrow {
-      position: absolute;
-      left: 12px;                      /* distance from left edge of page */
-      top: calc(100% - 0.6rem);        /* slightly below the header content (tweakable) */
-      transform: translateY(-20%);     /* fine tuning vertical centering under subtitle */
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 6px;
-      text-decoration: none;
-      color: var(--neon);
-      text-shadow: 0 0 6px var(--neon);
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(0,255,153,0.08);
-      font-weight: 700;
-      font-family: var(--font);
-      box-sizing: border-box;
-      /* make it visually match your neon theme but subtle */
+    /* Centered arrow - accessible, with small neon float animation */
+    .back-arrow{
+      position:absolute;
+      left:50%;
+      transform:translate(-50%,0);
+      top:calc(100% - 0.6rem);    /* tweak this to push arrow slightly lower/higher */
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:44px;
+      min-height:36px;
+      padding:6px 12px;
+      border-radius:8px;
+      background:var(--glass);
+      border:1px solid rgba(0,255,153,0.12);
+      color:var(--neon);
+      font-weight:700;
+      font-family:var(--font);
+      box-sizing:border-box;
+      cursor:pointer;
+      user-select:none;
+      box-shadow:0 0 8px rgba(0,255,153,0.03);
+      transition:transform 140ms ease, box-shadow 140ms ease;
     }
 
-    /* Prevent arrow overlapping content on small screens */
-    @media (max-width: 640px) {
-      .back-arrow {
-        left: 8px;
-        top: calc(100% + 6px);
-        transform: none;
-        padding: 5px 8px;
-        font-size: 0.95rem;
-      }
+    .back-arrow:hover{ transform:translate(-50%,0) scale(1.04); box-shadow:0 0 18px rgba(0,255,153,0.10); }
+    .back-arrow:focus{ outline:2px solid rgba(0,255,153,0.18); outline-offset:2px; box-shadow:0 0 20px rgba(0,255,153,0.18); }
 
-      header {
-        padding: 1.6rem 0.8rem 2.2rem;
-      }
+    /* tiny float animation for neon life */
+    @keyframes floaty {
+      0%{ transform: translate(-50%, 0) }
+      50%{ transform: translate(-50%, -4px) }
+      100%{ transform: translate(-50%, 0) }
+    }
+    .back-arrow .chev { animation: floaty 2.6s ease-in-out infinite; display:inline-block; }
+
+    /* layout main */
+    main{
+      max-width:900px;
+      margin:2rem auto;
+      padding:0 1rem;
     }
 
-    main {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      line-height: 1.6;
-    }
-
-    h2 {
-      border-bottom: var(--border);
-      padding-bottom: 0.4rem;
-    }
-
-    code, pre {
+    h2{ border-bottom:var(--border); padding-bottom:0.4rem; margin-top:0 }
+    pre, code{
       background: rgba(0,255,153,0.07);
-      padding: 0.3rem 0.5rem;
-      border-radius: 6px;
-      color: var(--neon);
-      display: block;
-      overflow-x: auto;
+      color:var(--neon);
+      padding:0.4rem 0.6rem;
+      border-radius:6px;
+      display:block;
+      overflow-x:auto;
+      font-family:var(--font);
     }
 
-    details {
-      margin-bottom: 1.5rem;
-      border: var(--border);
-      border-radius: 8px;
-      padding: 1rem;
+    details{
+      margin-bottom:1.5rem;
+      border:var(--border);
+      border-radius:8px;
+      padding:1rem;
     }
 
-    summary {
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 1.2rem;
+    summary{
+      font-weight:bold;
+      cursor:pointer;
+      font-size:1.15rem;
     }
 
-    footer {
-      text-align: center;
-      padding: 2rem;
-      border-top: var(--border);
-      margin-top: 2rem;
-      font-size: 0.9rem;
+    ul{ margin:0.5rem 0 0 1.2rem; }
+
+    footer{
+      text-align:center;
+      padding:2rem;
+      border-top:var(--border);
+      margin-top:2rem;
+      font-size:0.9rem;
     }
 
-    a {
-      color: var(--neon);
+    /* Responsive */
+    @media (max-width:640px){
+      header{ padding:1.6rem 0.8rem 2.4rem }
+      .back-arrow{
+        left:50%;
+        top:calc(100% + 8px);
+        transform:translate(-50%,0);
+        padding:5px 8px;
+        min-width:40px;
+        font-size:0.95rem;
+      }
+      main{ margin:1.25rem auto; }
     }
 
-    a:hover {
-      text-shadow: 0 0 10px var(--neon);
+    /* Small utility for visually-hidden accessible text */
+    .sr-only{
+      position:absolute !important;
+      width:1px; height:1px;
+      padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0);
+      white-space:nowrap; border:0;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Port 445 — SMB (Modern)</h1>
-    <p class="subtitle">A guide to enumeration and exploitation</p>
+    <h1>Marauders_Map — A tool for traversing networks</h1>
+    <p class="subtitle">A compact reference of ports, services & common enumeration commands</p>
 
-    <!-- arrow moved here and absolutely positioned relative to header -->
-    <a href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html" class="back-arrow">&lt;--</a>
+    <!-- Centered arrow anchor with inline SVG chevron for crispness -->
+    <a class="back-arrow" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html"
+       aria-label="Back to Marauders Map">
+      <!-- visually hidden text for screen readers (optional but helpful) -->
+      <span class="sr-only">Back to Marauders Map</span>
+
+      <!-- SVG chevron (keeps crisp on all screens). Using a small left arrow -->
+      <svg class="chev" width="20" height="14" viewBox="0 0 20 14" aria-hidden="true" focusable="false">
+        <path d="M13 1L5 7l8 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
   </header>
 
   <main>
-    <h2>0) What is SMB?</h2>
-    <p>
-      SMB (Server Message Block), also known as CIFS, is a network protocol for file sharing,
-      network browsing, and inter-process communication. Exploiting SMB can allow an attacker
-      to obtain access to shared files, network credentials, or sensitive configurations.
-    </p>
+    <!-- Example top content: port list and search box (kept compact like your example) -->
+    <section style="display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap;">
+      <div style="flex:1 1 360px;min-width:260px;">
+        <h2>Port List-</h2>
+        <ul>
+          <li>20 — FTP (Data)</li>
+          <li>21 — FTP (Control)</li>
+          <li>22 — SSH</li>
+          <li>23 — Telnet</li>
+          <li>25 — SMTP</li>
+          <li>53 — DNS</li>
+          <li>80 — HTTP</li>
+          <li>139 / 445 — SMB</li>
+        </ul>
+      </div>
 
-    <details open>
-      <summary>1) Recon Phase</summary>
-      <pre>
+      <div style="flex:0 1 300px;min-width:240px;">
+        <label for="port-search" style="display:block;margin-bottom:0.6rem;color:var(--neon);font-weight:700">Search</label>
+        <input id="port-search" placeholder="Search ports (e.g. ssh, 445)" style="
+          width:100%;
+          background:rgba(0,255,153,0.02);
+          border:1px solid rgba(0,255,153,0.06);
+          color:var(--neon);
+          padding:10px 12px;
+          border-radius:8px;
+          font-family:var(--font);
+          box-sizing:border-box;
+        ">
+      </div>
+    </section>
+
+    <article style="margin-top:1.5rem">
+      <h2>0) What is SMB?</h2>
+      <p>
+        SMB (Server Message Block), also known as CIFS, is a network protocol for file sharing,
+        network browsing, and inter-process communication. Exploiting SMB can allow an attacker
+        to obtain access to shared files, network credentials, or sensitive configurations.
+      </p>
+
+      <details open>
+        <summary>1) Recon Phase</summary>
+        <pre>
 nmap -sV -p 445,139 [targetip]
 nmap --script smb-os-discovery [targetip]
-      </pre>
-      <p>
-        Use <code>nmap</code> to identify the SMB version and operating system.
-        If the host is running SMBv1 and vulnerable to CVE-2017-0144 (EternalBlue),
-        it can be exploited for remote code execution.
-      </p>
-    </details>
+        </pre>
+        <p>
+          Use <code>nmap</code> to identify the SMB version and operating system.
+          If the host is running SMBv1 and vulnerable to CVE-2017-0144 (EternalBlue),
+          it can be exploited for remote code execution.
+        </p>
+      </details>
 
-    <details>
-      <summary>2) Enumeration Phase</summary>
-      <pre>
+      <details>
+        <summary>2) Enumeration Phase</summary>
+        <pre>
 enum4linux -a [targetip]
 smbclient -L //[targetip] -U ""
 smbclient -N -L //[targetip]
 rpcclient -U "" [targetip]
 rpcclient> enumdomusers
-      </pre>
-      <p>
-        These commands enumerate available SMB shares, users, and policies.
-        Null sessions (<code>-N</code> or empty username) indicate poor access control.
-        Use <code>rpcclient</code> to list domain users and identify potential credentials
-        for later exploitation.
-      </p>
-    </details>
+        </pre>
+        <p>
+          These commands enumerate available SMB shares, users, and policies.
+          Null sessions (<code>-N</code> or empty username) indicate poor access control.
+          Use <code>rpcclient</code> to list domain users and identify potential credentials
+          for later exploitation.
+        </p>
+      </details>
 
-    <details>
-      <summary>3) Exploitation Phase</summary>
-      <pre>
+      <details>
+        <summary>3) Exploitation Phase</summary>
+        <pre>
 smbclient //[targetip]/[sharename] -U ""
 msfconsole
 use auxiliary/scanner/smb/smb_ms17_010
 set RHOSTS [targetip]
 run
 hydra -L users.txt -P passwords.txt smb://[targetip]
-      </pre>
-      <p>
-        After identifying weak configurations, attempt to connect to open shares,
-        test for EternalBlue (MS17-010), or perform authorized brute-force testing
-        to identify weak passwords.
-      </p>
-    </details>
+        </pre>
+        <p>
+          After identifying weak configurations, attempt to connect to open shares,
+          test for EternalBlue (MS17-010), or perform authorized brute-force testing
+          to identify weak passwords.
+        </p>
+      </details>
 
-    <details>
-      <summary>SMB Info — What to Look For</summary>
-      <ul>
-        <li>Anonymous or guest access to sensitive shares</li>
-        <li>Old SMBv1 servers vulnerable to EternalBlue</li>
-        <li>Readable <code>SYSVOL</code> or <code>NETLOGON</code> shares in domain networks</li>
-        <li>Stored credential files (<code>.ini</code>, <code>.xml</code>, <code>.kdbx</code>)</li>
-      </ul>
-    </details>
+      <details>
+        <summary>SMB Info — What to Look For</summary>
+        <ul>
+          <li>Anonymous or guest access to sensitive shares</li>
+          <li>Old SMBv1 servers vulnerable to EternalBlue</li>
+          <li>Readable <code>SYSVOL</code> or <code>NETLOGON</code> shares in domain networks</li>
+          <li>Stored credential files (<code>.ini</code>, <code>.xml</code>, <code>.kdbx</code>)</li>
+        </ul>
+      </details>
 
-    <h2>Tools Required</h2>
-    <pre>
+      <h2>Tools Required</h2>
+      <pre>
 sudo apt install enum4linux smbclient
-    </pre>
+      </pre>
 
-    <h2>Citations</h2>
-    <ul>
-      <li><a href="https://hackviser.com/tactics/pentesting/services/smb" target="_blank">Hackviser SMB Enumeration Guide</a></li>
-      <li><a href="https://0xdf.gitlab.io/cheatsheets/smb-enum#/" target="_blank">0xdf SMB Cheatsheet</a></li>
-      <li><a href="https://www.geeksforgeeks.org/ethical-hacking/smb-enumeration/" target="_blank">GeeksforGeeks: SMB Enumeration</a></li>
-    </ul>
+      <h2>Citations</h2>
+      <ul>
+        <li><a href="https://hackviser.com/tactics/pentesting/services/smb" target="_blank" rel="noopener">Hackviser — SMB Enumeration Guide</a></li>
+        <li><a href="https://0xdf.gitlab.io/cheatsheets/smb-enum#/" target="_blank" rel="noopener">0xDF — SMB Cheatsheet</a></li>
+        <li><a href="https://www.geeksforgeeks.org/ethical-hacking/smb-enumeration/" target="_blank" rel="noopener">GeeksforGeeks — SMB Enumeration</a></li>
+      </ul>
+    </article>
   </main>
 
   <footer>
     &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
   </footer>
+
+  <!-- Small JS to clamp/adjust arrow if header layout changes (fonts, resize) -->
+  <script>
+    (function alignArrow(){
+      const arrow = document.querySelector('.back-arrow');
+      const header = document.querySelector('header');
+      if (!arrow || !header) return;
+
+      function clampTop(){
+        const headerRect = header.getBoundingClientRect();
+        const style = getComputedStyle(arrow);
+        // read computed top (px) if set as calc; fallback to numeric portion
+        const topRaw = parseFloat(style.top) || 0;
+        const maxTop = Math.max(6, headerRect.height - arrow.offsetHeight - 6);
+        // if current top is greater than max, clamp it
+        if (topRaw > maxTop) {
+          arrow.style.top = maxTop + 'px';
+        }
+      }
+
+      // run on load, after fonts ready, and on resize
+      window.addEventListener('resize', () => { clearTimeout(window._arrowTimer); window._arrowTimer = setTimeout(clampTop, 90); });
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(clampTop);
+      // initial run
+      clampTop();
+    })();
+  </script>
 </body>
 </html>
