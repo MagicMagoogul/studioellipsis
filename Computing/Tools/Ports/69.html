@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>69 — TFTP (Data)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.6;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.5rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a {
+      color: var(--neon);
+    }
+
+    a:hover {
+      text-shadow: 0 0 10px var(--neon);
+    }
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none; /* removes underline */
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+  
+    .nav-link:hover {
+      text-shadow: 0 0 10px var(--neon);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 69 — TFTP (Data)</h1>
+    <p>A guide to enumeration and exploitation of Trivial File Transfer Protocol</p>
+  <nav>
+    <a href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html" class="nav-link"><--</a>
+  </nav>
+  </header>
+  
+
+  <main>
+    <h2>0) What is TFTP?</h2>
+    <p>
+        Trivial File Transfer Protocol (TFTP) is a very simple, UDP-based file transfer service. It provides minimal authentication (usually none) and is often used for transferring small files such as firmware images, device configs, or boot files (PXE). Because it lacks built-in security it is commonly a target in network assessments.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+- Identify host(s) offering UDP/69 with a quick UDP scan (eg. nmap -sU -p 69)
+- Confirm responsiveness with tftp/atftp clients or nmap NSE scripts
+- Capture traffic with tshark/wireshark to observe transfer attempts and filenames
+      </pre>
+      <p>
+        Use <code>nmap -sU -p 69 --script tftp-enum &lt;target&gt;</code> to discover readable files and basic TFTP responses. Follow up with an interactive TFTP client for manual checks.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+- Attempt anonymous reads: use tftp/atftp to GET common files (config, startup-config, *.bin, *.img)
+- Try directory/file name fuzzing (common firmware names, device model names)
+- Use nmap NSE for enumeration: tftp-enum and related scripts
+      </pre>
+      <p>
+        Common commands:
+        <code>tftp &gt; connect &lt;target&gt;</code>
+        <code>tftp &gt; get &lt;filename&gt;</code>
+        <code>atftp --get &lt;filename&gt; --verbose &lt;target&gt;</code>
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <pre>
+- Download exposed configuration backups or firmware images that may contain credentials
+- Upload (if allowed) crafted files to achieve persistence or overwrite boot files (device dependent)
+- Use recovered credentials from configs to pivot to other services (SSH, HTTP admin, etc.)
+      </pre>
+      <p>
+        Look for readable files like device config, passwd-like files, or private keys. If upload/write is allowed, proceed with extreme caution and only in authorised testing scenarios.
+      </p>
+    </details>
+
+    <details>
+      <summary>TFTP Info — What to Look For</summary>
+      <ul>
+        <li>Unauthenticated read (GET) access to config or firmware files</li>
+        <li>Write (PUT) allowed — high impact if present</li>
+        <li>Default or predictable filenames (firmware images, startup-config, nxos.bin, backup.cfg)</li>
+        <li>Embedded credentials, plaintext config items, or private keys inside downloaded files</li>
+        <li>PXE/boot files exposing internal infrastructure or scripts</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required</h2>
+    <pre>
+sudo apt install tftp atftp tftp-hpa nmap tshark
+      </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol" target="_blank">1</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/tftp-enum.html" target="_blank">2</a></li>
+      <li><a href="https://www.rapid7.com/db/modules/auxiliary/scanner/tftp/tftp_read" target="_blank">3</a></li>
+    </ul>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
