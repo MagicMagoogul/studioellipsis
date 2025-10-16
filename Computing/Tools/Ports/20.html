@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>445 — SMB (Modern)</title>
+  <title>20- FTP (Data)</title>
   <style>
     :root {
       --neon: #00ff99;
@@ -84,67 +84,58 @@
 </head>
 <body>
   <header>
-    <h1>Port 445 — SMB (Modern)</h1>
-    <p>A guide to enumeration and exploitation</p>
+    <h1>Port 20 — FTP (Data)</h1>
+    <p>A guide to enumeration and exploitation of File Transfer Protocol</p>
   </header>
+  
+  <nav>
+  <a href="https://www.studioellipsis.org/Computing/Marauders_Map.html" class="nav-link"><--</a>
+  </nav>
 
   <main>
-    <h2>0) What is SMB?</h2>
+    <h2>0) What is FTP?</h2>
     <p>
-      SMB (Server Message Block), also known as CIFS, is a network protocol for file sharing,
-      network browsing, and inter-process communication. Exploiting SMB can allow an attacker
-      to obtain access to shared files, network credentials, or sensitive configurations.
+        File Transfer Protocol (FTP) is a service for transfering files.
     </p>
 
     <details open>
       <summary>1) Recon Phase</summary>
       <pre>
-nmap -sV -p 445,139 [targetip]
-nmap --script smb-os-discovery [targetip]
+-
+-
+-
       </pre>
       <p>
-        Use <code>nmap</code> to identify the SMB version and operating system.
-        If the host is running SMBv1 and vulnerable to CVE-2017-0144 (EternalBlue),
-        it can be exploited for remote code execution.
+        Use <code>BLANK</code> to identify....
       </p>
     </details>
 
     <details>
       <summary>2) Enumeration Phase</summary>
       <pre>
-enum4linux -a [targetip]
-smbclient -L //[targetip] -U ""
-smbclient -N -L //[targetip]
-rpcclient -U "" [targetip]
-rpcclient> enumdomusers
+-
+-
+-
       </pre>
       <p>
-        These commands enumerate available SMB shares, users, and policies.
-        Null sessions (<code>-N</code> or empty username) indicate poor access control.
-        Use <code>rpcclient</code> to list domain users and identify potential credentials
-        for later exploitation.
+        These commands enumerate...
       </p>
     </details>
 
     <details>
       <summary>3) Exploitation Phase</summary>
       <pre>
-smbclient //[targetip]/[sharename] -U ""
-msfconsole
-use auxiliary/scanner/smb/smb_ms17_010
-set RHOSTS [targetip]
-run
-hydra -L users.txt -P passwords.txt smb://[targetip]
+-
+-
+-
       </pre>
       <p>
-        After identifying weak configurations, attempt to connect to open shares,
-        test for EternalBlue (MS17-010), or perform authorized brute-force testing
-        to identify weak passwords.
+        After identifying weak configuration...
       </p>
     </details>
 
     <details>
-      <summary>SMB Info — What to Look For</summary>
+      <summary>FTP Info — What to Look For</summary>
       <ul>
         <li>Anonymous or guest access to sensitive shares</li>
         <li>Old SMBv1 servers vulnerable to EternalBlue</li>
@@ -155,14 +146,14 @@ hydra -L users.txt -P passwords.txt smb://[targetip]
 
     <h2>Tools Required</h2>
     <pre>
-sudo apt install enum4linux smbclient
+sudo apt install ...
       </pre>
 
     <h2>Citations</h2>
     <ul>
-      <li><a href="https://hackviser.com/tactics/pentesting/services/smb" target="_blank">Hackviser SMB Enumeration Guide</a></li>
-      <li><a href="https://0xdf.gitlab.io/cheatsheets/smb-enum#/" target="_blank">0xdf SMB Cheatsheet</a></li>
-      <li><a href="https://www.geeksforgeeks.org/ethical-hacking/smb-enumeration/" target="_blank">GeeksforGeeks: SMB Enumeration</a></li>
+      <li><a href="https://hackviser.com/tactics/pentesting/services/smb" target="_blank">1</a></li>
+      <li><a href="https://0xdf.gitlab.io/cheatsheets/smb-enum#/" target="_blank">2</a></li>
+      <li><a href="https://www.geeksforgeeks.org/ethical-hacking/smb-enumeration/" target="_blank">3</a></li>
     </ul>
   </main>
 
