@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>123 — NTP (Network Time Protocol)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 123 — NTP (Network Time Protocol)</h1>
+    <p>A guide to enumeration and assessment of NTP services</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is NTP?</h2>
+    <p>
+      NTP (Network Time Protocol) synchronizes clocks of computers over packet-switched, variable-latency networks. It normally uses UDP port 123. Accurate time is essential for logging, authentication (Kerberos), certificates, and event correlation. Misconfigured or outdated NTP servers can be abused for amplification DDoS, information disclosure (monlist/peer lists), or time-based attacks.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+- Discover UDP/123 on hosts: nmap -sU -p 123 &lt;target&gt;
+- Grab server responses and version (ntp control/query replies)
+- Use nmap NSE for NTP: nmap -sU -p 123 --script ntp-info,ntp-monlist &lt;target&gt;
+- Passive recon: check DNS MX/A records for known time servers or public NTP servers
+      </pre>
+      <p>
+        Start with an Nmap UDP scan and ntp-aware scripts to see if the server responds to control queries (many modern servers disable risky queries by default).
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+- Query NTP peers and status:
+    ntpq -p &lt;target&gt;          # peers and offsets
+    ntpq -c rv &lt;target&gt;     # runtime variables
+- Test for legacy monlist (may be disabled on newer servers):
+    ntpdc -n &lt;target&gt; monlist (legacy; may be blocked)
+- Check for open NTP amplifiers (reflection test) and rate-limiting
+- Inspect server stratum, reference ID, and offsets for misconfigurations
+- Use ntpstat and chronyc (if available) to check sync state
+      </pre>
+      <p>
+        Look for large peer lists, public access to control/query commands, or servers advertising themselves as stratum 1/2 that are exposed to the internet.
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation / Abuse</summary>
+      <pre>
+- Amplification / reflection DDoS:
+    # legacy monlist response could be used to amplify traffic; modern servers should disable it
+- Time spoofing / manipulation (authorized labs only):
+    # If attacker controls upstream time source or can MITM, they can shift time to break logs/auth
+- Information gathering:
+    # Harvest server configuration hints from ntpq/ntpdc replies (peers, refid, drift)
+- Misconfiguration impact:
+    # Kerberos/Cert auth failures if system time is skewed; audit/log tampering risks
+      </pre>
+      <p>
+        Primary risks are DDoS amplification (if server responds to certain control queries) and operational impact from incorrect time (authentication, logging). Active exploitation must be authorized.
+      </p>
+    </details>
+
+    <details>
+      <summary>NTP Info — What to Look For</summary>
+      <ul>
+        <li>Server responds to control queries (monlist/ntpdc/ntpq) from arbitrary hosts</li>
+        <li>High-stratum misreporting or large peer lists exposed</li>
+        <li>No rate-limiting on control responses (amplification risk)</li>
+        <li>Use of old/unsupported NTP implementations (vulnerabilities/bugs)</li>
+        <li>Servers used as public time sources inside private networks (cross-boundary risk)</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required</h2>
+    <pre>
+sudo apt install nmap ntpdate ntp ntpstat ntpsec chrony
+# Useful utilities:
+# - ntpq (query peers/status)
+# - ntpdc (legacy control utility; monlist may be supported on old servers)
+# - chronyc (for chrony-managed systems)
+# - nmap NSE: ntp-info, ntp-monlist
+    </pre>
+
+    <h2>Quick copy-paste command cheatsheet</h2>
+    <pre>
+# discovery
+nmap -sU -p 123 --script=ntp-info,ntp-monlist &lt;target&gt;
+
+# list peers & status
+ntpq -p &lt;target&gt;
+ntpq -c rv &lt;target&gt;
+
+# legacy monlist (may be disabled; use only in authorized testing)
+ntpdc -n &lt;target&gt; monlist
+
+# check time sync (local)
+ntpstat
+
+# test querying via ntpdate (read-only)
+ntpdate -q &lt;target&gt;
+
+# chrony client check
+chronyc -a -m 'sourcestats' 'sources' 'tracking' | chronyc -n -m
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://datatracker.ietf.org/doc/html/rfc5905" target="_blank" rel="noopener">RFC 5905 — Network Time Protocol Version 4</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/ntp-info.html" target="_blank" rel="noopener">Nmap NSE — ntp-info / ntp-monlist</a></li>
+      <li><a href="https://www.us-cert.gov/ncas/alerts/TA14-013A" target="_blank" rel="noopener">US-CERT Advisory — NTP amplification (historical)</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> Use these techniques only on systems you own or are explicitly authorized to test. Abuse of NTP (reflection/amplification, spoofing, or unauthorized queries) is illegal and unethical.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
