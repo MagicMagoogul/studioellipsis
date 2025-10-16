@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>110 — POP3 (Modern)</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>110 — POP3 (Post Office Protocol v3)</title>
   <style>
     :root {
       --neon: #00ff99;
@@ -12,18 +12,19 @@
       --font: 'Courier New', Courier, monospace;
     }
 
+    html, body { height: 100%; }
     body {
       margin: 0;
       background: var(--bg);
       color: var(--neon);
       font-family: var(--font);
       text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
     }
 
     header {
-      position: relative;
       text-align: center;
-      padding: 2.25rem 1rem 2.5rem;
+      padding: 2.25rem;
       border-bottom: var(--border);
     }
 
@@ -32,49 +33,10 @@
       font-size: 2.4rem;
     }
 
-    .subtitle {
-      margin: 0.45rem 0 0;
-      font-size: 1rem;
-      opacity: 0.95;
-    }
-
-    .back-arrow {
-      position: absolute;
-      left: 12px;
-      top: calc(100% - 0.6rem);
-      transform: translateY(-20%);
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 6px;
-      text-decoration: none;
-      color: var(--neon);
-      text-shadow: 0 0 6px var(--neon);
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(0,255,153,0.08);
-      font-weight: 700;
-      font-family: var(--font);
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 640px) {
-      .back-arrow {
-        left: 8px;
-        top: calc(100% + 6px);
-        transform: none;
-        padding: 5px 8px;
-        font-size: 0.95rem;
-      }
-
-      header {
-        padding: 1.6rem 0.8rem 2.2rem;
-      }
-    }
-
     main {
       max-width: 900px;
       margin: 2rem auto;
       padding: 0 1rem;
-      line-height: 1.6;
     }
 
     h2 {
@@ -92,7 +54,7 @@
     }
 
     details {
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
       border: var(--border);
       border-radius: 8px;
       padding: 1rem;
@@ -101,7 +63,7 @@
     summary {
       font-weight: bold;
       cursor: pointer;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
     }
 
     footer {
@@ -112,98 +74,83 @@
       font-size: 0.9rem;
     }
 
-    a {
-      color: var(--neon);
-    }
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
 
-    a:hover {
-      text-shadow: 0 0 10px var(--neon);
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Port 110 — POP3 (Modern)</h1>
-    <p class="subtitle">A guide to enumeration and exploitation</p>
-    <a href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html" class="back-arrow">&lt;--</a>
+    <h1>Port 110 — POP3 (Post Office Protocol v3)</h1>
+    <p>A guide to enumeration and exploitation of POP3 mail services</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
   </header>
 
   <main>
     <h2>0) What is POP3?</h2>
     <p>
-      POP3 (Post Office Protocol version 3) is a standard protocol used for retrieving emails from a mail server. It operates on port 110 (or 995 for POP3S with SSL/TLS). Exploiting POP3 can lead to unauthorized access to email accounts, sensitive data exposure, or credential harvesting.
+      POP3 (Post Office Protocol version 3) is a protocol for retrieving email from a remote mail server to a client. It typically listens on TCP port 110 (plaintext) and on 995 for POP3S (TLS). POP3 downloads messages to the client and (optionally) removes them from the server. Misconfigurations, weak authentication, or exposed credentials make POP3 a target during assessments.
     </p>
 
     <details open>
       <summary>1) Recon Phase</summary>
       <pre>
-nmap -sV -p 110,995 [targetip]
-nmap --script pop3-capabilities [targetip]
-nmap --script pop3-ntlm-info [targetip]
+- Detect POP3 service and banner: nmap -sV -p 110 [target]
+- Check for POP3S (TLS) on port 995: nmap -sV -p 995 [target]
+- Nmap NSE scripts: nmap -p 110 --script pop3-capabilities,pop3-brute [target]
+- Passive recon: search for mail server hostnames in DNS (MX records) with dig/host
       </pre>
       <p>
-        Use <code>nmap</code> to detect the POP3 service version and check for SSL/TLS support. Scripts like <code>pop3-capabilities</code> reveal server features, and <code>pop3-ntlm-info</code> may expose domain or authentication details if NTLM is enabled.
+        Record server software (Dovecot, Courier, Exchange), supported authentication methods (USER/PASS, APOP, SASL), and whether TLS is enforced.
       </p>
     </details>
 
     <details>
       <summary>2) Enumeration Phase</summary>
       <pre>
-telnet [targetip] 110
-USER [username]
-PASS [password]
-LIST
-openssl s_client -connect [targetip]:995
-hydra -L users.txt -P passwords.txt pop3://[targetip]
+- Manual banner & commands: (telnet/netcat)
+    nc [target] 110
+    # expect: +OK <banner>
+
+- Basic POP3 flow (manual):
+    USER username
+    PASS password
+    STAT            # message count/size
+    LIST            # list messages
+    UIDL            # unique IDs
+    RETR <msg#>     # retrieve message
+    DELE <msg#>     # delete message
+    QUIT
+
+- Test APOP support (timestamped MD5 challenge) if offered in banner
+- Use pop3-client scripts/tools (nmap pop3-* scripts, pop3scan) for automated checks
+- User enumeration via VRFY is SMTP; for POP3 use username lists and observe responses/timing differences
       </pre>
       <p>
-        Connect via <code>telnet</code> or <code>openssl</code> to test for valid credentials or enumerate email lists. Use <code>hydra</code> for authorized brute-force testing to identify weak passwords. Be cautious with brute-forcing to avoid account lockouts.
+        Try connecting and issuing POP3 commands to see exact server responses. Note whether the server accepts plaintext auth or redirects to STARTTLS/POP3S.
       </p>
     </details>
 
     <details>
       <summary>3) Exploitation Phase</summary>
       <pre>
-msfconsole
-use auxiliary/scanner/pop3/pop3_version
-set RHOSTS [targetip]
-run
-use auxiliary/client/pop3/pop3_fetch
-set RHOSTS [targetip]
-set USERNAME [username]
-set PASSWORD [password]
-run
-      </pre>
-      <p>
-        In Metasploit, scan for POP3 service details or attempt to retrieve emails with known credentials. Weak or default credentials can allow access to sensitive email content. Ensure proper authorization before testing.
-      </p>
-    </details>
-
-    <details>
-      <summary>POP3 Info — What to Look For</summary>
-      <ul>
-        <li>Unencrypted POP3 (port 110) exposing credentials in plaintext</li>
-        <li>Weak or default credentials for email accounts</li>
-        <li>Misconfigured servers allowing anonymous access</li>
-        <li>Outdated POP3 servers vulnerable to known exploits (e.g., buffer overflows)</li>
-      </ul>
-    </details>
-
-    <h2>Tools Required</h2>
-    <pre>
-sudo apt install nmap hydra openssl telnet
-    </pre>
-
-    <h2>Citations</h2>
-    <ul>
-      <li><a href="https://www.hackingarticles.in/a-detailed-guide-on-pop3-enumeration/" target="_blank">Hacking Articles: POP3 Enumeration Guide</a></li>
-      <li><a href="https://nmap.org/nsedoc/scripts/pop3-capabilities.html" target="_blank">Nmap POP3 Capabilities Script</a></li>
-      <li><a href="https://www.offensive-security.com/metasploit-unleashed/pop3-scanning/" target="_blank">Offensive Security: POP3 Scanning</a></li>
-    </ul>
-  </main>
-
-  <footer>
-    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
-  </footer>
-</body>
-</html>
+- Credential harvesting: if weak creds found, authenticate and download mailboxes (RETR)
+- APOP: if supported and credentials can be guessed/extracted from zone files, use APOP flow
+- Brute force (authorized only): hydra -L users.txt -P passwords.txt pop3://[target]
+- If mailboxes contain sensitive data (password resets, API keys), pivot using discovere
