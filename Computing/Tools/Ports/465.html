@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>465 — SMTP (SMTPS)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 465 — SMTP (SMTPS)</h1>
+    <p>A guide to enumeration and assessment of SMTPS (implicit TLS) services</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is SMTPS (port 465)?</h2>
+    <p>
+      Port 465 is commonly used for SMTPS — SMTP over implicit TLS (older but still in use). Unlike port 25 (plain SMTP) or 587 (SMTP submission with STARTTLS), connections to 465 begin with TLS immediately. SMTPS is used for client-to-mailserver submission and for some server-to-server configurations. In assessments, focus on authentication, server certificate handling, allowed senders, and whether authentication can be abused or credentials harvested.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <pre>
+# service & version detection (TLS-enabled)
+nmap -sV -p 465 --script=smtp-commands,ssl-cert,ssl-enum-ciphers <target>
+
+# banner & cert inspection
+openssl s_client -connect <target>:465 -crlf
+# observe certificate CN, SANs, and expiry
+
+# identify mail host via MX records (dig MX <domain>)
+dig MX <domain>
+      </pre>
+      <p>
+        Record mail server software (Postfix/Exim/Sendmail/Microsoft). Note TLS certificate details (issuer, SANs) — these often expose internal hostnames.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <pre>
+# check supported auth mechanisms & capabilities
+# use openssl to start TLS and read SMTP greeting
+openssl s_client -connect <target>:465 -crlf
+
+# test AUTH mechanisms (AUTH LOGIN, PLAIN, XOAUTH2)
+# automated scripts:
+nmap -p 465 --script=smtp-auth-enum,smtp-commands --script-args smtp.user=someuser <target>
+
+# attempt authenticated sessions (authorized testing):
+swaks --to test@domain.com --from me@domain.com --server <target> --port 465 --auth LOGIN --auth-user user --auth-password pass
+
+# enumerate valid users via response timing or application-level interactions where possible
+      </pre>
+      <p>
+        Since 465 uses implicit TLS, enumeration is often focused on authentication vectors and certificate-based issues rather than VRFY/EXPN (which are more common on port 25).
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <pre>
+# relay abuse (if server allows authenticated or unauthenticated submission)
+# test sending mail to external recipient via authenticated submission
+swaks --to victim@example.com --from attacker@domain.com --server <target> --port 465 --auth LOGIN --auth-user user --auth-password pass
+
+# credential brute-force (authorized only)
+hydra -s 465 -S -l user -P passlist smtp://<target>
+
+# OAuth/XOAUTH2 / token misuse checks for modern providers
+# check for client certificates or weak TLS ciphers that can be downgraded (rare)
+# post-auth actions: access mailbox (IMAP/POP3) with same creds, search for tokens/passwords
+      </pre>
+      <p>
+        Exploitation typically means using valid credentials to send phishing/relay messages, harvest mailbox content via other services, or reuse credentials to access admin panels. Focus on lateral impact (password reuse) and abuse of submission privileges.
+      </p>
+    </details>
+
+    <details>
+      <summary>SMTPS Info — What to Look For</summary>
+      <ul>
+        <li>Server accepts authenticated submission and relays mail to external domains</li>
+        <li>Weak or default credentials for submission accounts</li>
+        <li>Poor TLS configuration (expired certificate, weak ciphers, mismatched CN/SAN)</li>
+        <li>Token-based auth (XOAUTH2) misconfigurations or leaked tokens</li>
+        <li>Certificates exposing internal hostnames or services (useful for pivoting)</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required</h2>
+    <pre>
+sudo apt install nmap openssl swaks hydra
+# Optional:
+# - smtp-user-enum (for user enumeration on other SMTP ports)
+# - sslyze / testssl.sh for deeper TLS checks
+# - mail client tools (mutt, mailx) for manual testing
+    </pre>
+
+    <h2>Quick copy-paste command cheatsheet</h2>
+    <pre>
+# check TLS cert and banner
+openssl s_client -connect <target>:465 -crlf
+
+# nmap TLS + SMTP scripts
+nmap -sV -p 465 --script=ssl-cert,ssl-enum-ciphers,smtp-commands,smtp-auth-enum <target>
+
+# test authenticated send (swaks)
+swaks --to victim@test.com --from me@domain.com --server <target> --port 465 --auth LOGIN --auth-user user --auth-password pass
+
+# brute-force authenticated SMTP (authorized only)
+hydra -s 465 -S -L users.txt -P passwords.txt smtp://<target>
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://datatracker.ietf.org/doc/html/rfc8314" target="_blank" rel="noopener">RFC 8314 — SMTP over TLS (implicit TLS) guidance</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/smtp-auth-enum.html" target="_blank" rel="noopener">Nmap NSE — smtp-auth-enum</a></li>
+      <li><a href="https://www.swaks.org/" target="_blank" rel="noopener">swaks — SMTP test tool</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> Use these techniques only on systems you own or are explicitly authorized to test. Sending mail, brute-forcing credentials, or abusing submission privileges without permission is illegal and unethical.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
