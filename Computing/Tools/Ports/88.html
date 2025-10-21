@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>22 — SSH (Secure Shell)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      line-height: 1.6;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.5rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a {
+      color: var(--neon);
+    }
+
+    a:hover {
+      text-shadow: 0 0 10px var(--neon);
+    }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+
+    .nav-link:hover {
+      text-shadow: 0 0 10px var(--neon);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 22 — SSH (Secure Shell)</h1>
+    <p>A guide to enumeration and exploitation of the SSH service</p>
+    <nav>
+      <a href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html" class="nav-link"><--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is SSH?</h2>
+    <p>
+      Secure Shell (SSH) is a cryptographic network protocol that allows secure remote access to systems and services over an unsecured network. It typically runs on port 22 and is used for administration, file transfers (SCP/SFTP), and tunneling. Misconfigurations or weak credentials often make SSH a prime target during penetration testing.
+    </p>
+
+    <details open>
+      <summary>1) Recon Phase</summary>
+      <h3>Identify SSH service and version information.</h3>
+      <pre>
+nmap -sV -p 22 [targetip]
+      </pre>
+      <p>
+        Detects whether SSH is open and retrieves version details such as OpenSSH version and OS hints.
+      </p>
+      <pre>
+nmap -p 22 --script ssh-hostkey,ssh2-enum-algos [targetip]
+      </pre>
+      <p>
+        Gathers supported encryption algorithms, authentication methods, and host key fingerprints.
+      </p>
+    </details>
+
+    <details>
+      <summary>2) Enumeration Phase</summary>
+      <p>
+        Enumeration focuses on identifying potential weak points in configuration, user credentials, and algorithms.
+      </p>
+      <pre>
+# Attempt connection
+ssh [user]@[targetip]
+
+# Banner grabbing
+nc [targetip] 22
+      </pre>
+      <p>
+        Look for version information (e.g., “OpenSSH 7.2p2 Ubuntu 4ubuntu2.8”) — older versions may be vulnerable.
+      </p>
+      <pre>
+# User enumeration (with Metasploit)
+msfconsole
+use auxiliary/scanner/ssh/ssh_enumusers
+set RHOSTS [targetip]
+set USER_FILE users.txt
+run
+      </pre>
+      <p>
+        Checks which usernames are valid through SSH response timing differences.
+      </p>
+      <pre>
+# Brute force login (authorized testing only)
+hydra -L users.txt -P passwords.txt ssh://[targetip]
+      </pre>
+      <p>
+        Hydra attempts username/password combinations. Use carefully and only when permitted.
+      </p>
+    </details>
+
+    <details>
+      <summary>3) Exploitation Phase</summary>
+      <p>
+        Exploitation depends on authentication weaknesses or misconfigurations discovered earlier.
+      </p>
+      <pre>
+# Connect with discovered credentials
+ssh [username]@[targetip]
+      </pre>
+      <p>
+        After login, check system information, privilege escalation paths, and file permissions.
+      </p>
+      <pre>
+# Exploit weak key authentication
+# If an id_rsa key is found, use:
+chmod 600 id_rsa
+ssh -i id_rsa [username]@[targetip]
+      </pre>
+      <p>
+        Use found private keys or credentials from other compromised services. If the SSH server allows root login, that’s a critical misconfiguration.
+      </p>
+      <pre>
+# Exploit older SSH versions (rare)
+searchsploit openssh
+      </pre>
+      <p>
+        Some outdated SSH versions may have remote code execution or privilege escalation vulnerabilities.
+      </p>
+    </details>
+
+    <details>
+      <summary>SSH Info — What to Look For</summary>
+      <ul>
+        <li>Weak or default credentials</li>
+        <li>Outdated OpenSSH versions with known CVEs</li>
+        <li>Publicly accessible private keys or authorized_keys files</li>
+        <li>Root login allowed via SSH</li>
+        <li>Weak or deprecated encryption algorithms</li>
+      </ul>
+    </details>
+
+    <h2>Tools Required</h2>
+    <pre>
+sudo apt install nmap hydra openssh-client metasploit-framework netcat searchsploit
+    </pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://nmap.org/nsedoc/scripts/ssh2-enum-algos.html" target="_blank">1 — Nmap SSH NSE Scripts</a></li>
+      <li><a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-ssh" target="_blank">2 — HackTricks: SSH Pentesting</a></li>
+      <li><a href="https://www.geeksforgeeks.org/ssh-protocol-in-computer-network/" target="_blank">3 — GeeksforGeeks: SSH Protocol Overview</a></li>
+    </ul>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
