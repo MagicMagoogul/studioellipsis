@@ -247,6 +247,22 @@ const entries = [
     tools: [".",".",".","."],
     notes: "Persistence"
   },
+  {
+    term: "Fuzzing",
+    tags: ["persistence"],
+    what: "Making backdoors to more easily access a system.",
+    checks: ["., .","./.","."],
+    payloads: ["ffuf -w /usr/share/seclists/Usernames/Names/names.txt \
+  -X POST \
+  -d 'username=FUZZ&email=x&password=x&cpassword=x' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -u 'http://10.201.2.212/customers/signup' \
+  -mr 'username already exists' \
+  -t 40 -c
+  "],
+    tools: [".",".",".","."],
+    notes: "Persistence"
+  },
 
 ];
 
