@@ -237,8 +237,12 @@ const entries = [
       "Compare ciphertexts for repeating patterns"
     ],
     payloads: [
-      "python3 -c 'print(bytes([a^b for a,b in zip(ct1,ct2)]))'",
-      "openssl rsa -in key.pem -text -noout"
+      "FeatherDuster - automated, modular cryptanalysis tool",
+      "Hash Extender - utility tool for performing hash length extension attacks",
+      "PkCrack - tool for breaking PkZip-encryption",
+      "RSATool - generate private key with knowledge of p and q",
+      "XORTool - analyzes multi-byte xor cipher",
+      "Cyberchef - online tool for decrypting ciphers"
     ],
     tools: ["CyberChef", "RsaCtfTool", "hashcat", "John the Ripper"],
     notes: "Always check for hints like repeated ciphertext blocks (ECB mode)."
