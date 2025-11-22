@@ -175,6 +175,7 @@ sudo apt install dnsutils nmap dnsrecon dnsenum amass subfinder massdns
     <pre>
 # basic discovery
 nmap -sU -p 53 --script=dns-recursion,dns-nsid <target>
+nslookup [domain]
 
 # authoritative nameservers
 dig NS <domain>
