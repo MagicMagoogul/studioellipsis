@@ -8,3 +8,142 @@ Methods like these can be used to gain initial access
 
 -->
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>110 — POP3 (Post Office Protocol v3)</title>
+  <style>
+    :root {
+      --neon: #00ff99;
+      --bg: #000;
+      --border: 1px solid var(--neon);
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: var(--font);
+      text-shadow: 0 0 5px var(--neon);
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      padding: 2.25rem;
+      border-bottom: var(--border);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.4rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    code, pre {
+      background: rgba(0,255,153,0.07);
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      color: var(--neon);
+      display: block;
+      overflow-x: auto;
+    }
+
+    details {
+      margin-bottom: 1.25rem;
+      border: var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: var(--border);
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    a { color: var(--neon); }
+    a:hover { text-shadow: 0 0 10px var(--neon); }
+
+    .nav-link {
+      color: var(--neon);
+      text-decoration: none;
+      font-weight: 700;
+      text-shadow: 0 0 6px var(--neon);
+    }
+    .nav-link:hover { text-shadow: 0 0 10px var(--neon); }
+
+    hr.soft {
+      border: 0;
+      height: 1px;
+      background: rgba(0,255,153,0.06);
+      margin: 1.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Port 110 — POP3 (Post Office Protocol v3)</h1>
+    <p>A guide to enumeration and exploitation of POP3 mail services</p>
+    <nav>
+      <a class="nav-link" href="https://www.studioellipsis.org/Computing/Tools/Marauders_Map.html">&lt;--</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>0) What is POP3?</h2>
+    <p>
+      POP3 (Post Office Protocol version 3) is a protocol for retrieving email from a remote mail server to a client. It typically listens on TCP port 110 (plaintext) and on 995 for POP3S (TLS). POP3 downloads messages to the client and (optionally) removes them from the server. Misconfigurations, weak authentication, or exposed credentials make POP3 a target during assessments.
+    </p>
+
+<!--
+    This section is used for providing a general cheat sheet on making web shells
+    It'll be more focused on actions you can take rather than explaining the concepts
+    Godspeed
+-->
+    
+<h2>Quick copy-paste command cheatsheet</h2>
+<pre>
+    
+</pre>
+
+    <h2>Citations</h2>
+    <ul>
+      <li><a href="https://datatracker.ietf.org/doc/html/rfc1939" target="_blank" rel="noopener">RFC 1939 — Post Office Protocol - Version 3</a></li>
+      <li><a href="https://nmap.org/nsedoc/scripts/pop3-capabilities.html" target="_blank" rel="noopener">Nmap NSE — pop3-capabilities</a></li>
+      <li><a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-pop3" target="_blank" rel="noopener">HackTricks — POP3 pentesting</a></li>
+    </ul>
+
+    <hr class="soft" />
+    <p style="font-size:0.95rem;opacity:0.95;">
+      <strong>Disclaimer:</strong> Use these techniques only on systems and mailboxes you own or are explicitly authorized to test. Capturing or accessing others' email is illegal and unethical without permission.
+    </p>
+  </main>
+
+  <footer>
+    &copy; 2025 Riley Owen — Studio Ellipsis Cybersecurity Writeups
+  </footer>
+</body>
+</html>
