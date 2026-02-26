@@ -5,77 +5,105 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Riley Owen</title>
   <style>
-    :root { --nav-h: 64px; } /* menu height */
+:root { --nav-h: 64px; }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
   background-color: #000;
   color: white;
   font-family: 'Helvetica Neue', sans-serif;
   overflow-x: hidden;
-  overflow-y: hidden; /* add this line */
-  zoom: 0.85;
+  padding-bottom: var(--nav-h);
 }
 
+/* Container */
+.container {
+  width: 90%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
-    /* Firefox zoom fallback */
-    @-moz-document url-prefix() {
-      body {
-        transform: scale(0.85);
-        transform-origin: 0 0;
-        width: calc(100% / 0.85);
-        padding-bottom: calc(var(--nav-h) + 24px);
-      }
-    }
+/* Header */
+header {
+  padding: 6vh 0 2rem;
+}
 
-    header { padding: 4rem 2rem 2rem; text-align: left; }
+/* Responsive Title */
+h1 {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 700;
+  letter-spacing: 0.1rem;
+  line-height: 1.1;
+}
 
-    .container {
-      max-width: 1400px;           /* was 1200px → video appears larger */
-      margin: 0 auto;
-      padding: 0 2rem;
-    }
+/* Responsive Subtitle */
+.subtitle {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-weight: 300;
+  margin-top: 1rem;
+}
 
-    h1 {
-      font-size: 5rem;
-      font-weight: 700;
-      letter-spacing: 0.1rem;
-      line-height: 1.1;
-    }
+/* Video */
+.preview {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  margin-top: 2rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+  display: block;
+}
 
-    .subtitle { font-size: 1.5rem; font-weight: 300; margin-top: 1rem; }
+/* Navigation */
+nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--nav-h);
+  background-color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 1rem;
+  border-top: 1px solid #222;
+  z-index: 1000;
+}
 
-    .preview {
-      width: 100%;
-      border-radius: 1rem;
-      margin-top: 2rem;
-      margin-bottom: 2.5rem;       /* extra space so it never feels tight */
-      box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
-      display: block;
-    }
+nav a {
+  text-decoration: none;
+  color: #aaa;
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  transition: color 0.2s ease;
+}
 
-    nav {
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      height: var(--nav-h);
-      background-color: #111;
-      display: flex;
-      align-items: center;          /* vertically center links */
-      justify-content: space-around;
-      padding: 0 1rem;
-      border-top: 1px solid #222;
-      z-index: 1000;                /* stay on top just in case */
-    }
+nav a:hover {
+  color: white;
+}
 
-    nav a {
-      text-decoration: none;
-      color: #aaa;
-      font-size: 1rem;
-      transition: color 0.2s ease;
-    }
+/*Mobile Layout*/
+@media (max-width: 768px) {
+  header {
+    padding: 4vh 0 2rem;
+  }
 
-    nav a:hover { color: white; }
+  nav {
+    flex-direction: column;
+    height: auto;
+    padding: 1rem 0;
+    gap: 0.75rem;
+  }
+
+  body {
+    padding-bottom: 120px;
+  }
+}
   </style>
 </head>
 <body>
