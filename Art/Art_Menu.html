@@ -122,6 +122,50 @@
       font-size: 0.9rem;
       color: #bbb;
     }
+
+    /* MOBILE RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+
+  /* Stack layout vertically */
+  .main-container {
+    flex-direction: column;
+    padding: 0 1rem;
+  }
+
+  /* Sidebar full width */
+  .sidebar {
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  /* Make gallery single column */
+  .gallery {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  /* Bigger images for scrolling feel */
+  .gallery-item img {
+    width: 100%;
+    height: auto;
+  }
+
+  /* NAVBAR FIX */
+  nav {
+    flex-wrap: wrap;
+    padding: 0.5rem;
+  }
+
+  nav a {
+    margin: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  /* TITLE scaling */
+  header h1 {
+    font-size: 2.2rem;
+  }
+}
   </style>
 </head>
 <body>
