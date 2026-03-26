@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STUDIO ELLIPSIS</title>
+
   <style>
     * {
       box-sizing: border-box;
@@ -26,7 +27,6 @@
     header h1 {
       font-size: 3rem;
       letter-spacing: 3px;
-      color: #fff;
     }
 
     nav {
@@ -34,6 +34,7 @@
       justify-content: center;
       background-color: #111;
       padding: 1rem 0;
+      flex-wrap: wrap;
     }
 
     nav a {
@@ -63,7 +64,6 @@
       margin-bottom: 1rem;
       font-size: 1.2rem;
       text-transform: uppercase;
-      color: #fff;
     }
 
     .sidebar ul {
@@ -83,6 +83,7 @@
       color: #00c2ff;
     }
 
+    /* DESKTOP GRID */
     .gallery {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -92,9 +93,9 @@
 
     .gallery-item {
       background: #111;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
       overflow: hidden;
+      box-shadow: 0 2px 6px rgba(255,255,255,0.1);
     }
 
     .gallery-item img {
@@ -104,9 +105,8 @@
     }
 
     .gallery-item h4 {
-      padding: 0.75rem 1rem 0 1rem;
+      padding: 0.75rem 1rem 0;
       font-size: 1rem;
-      color: #fff;
     }
 
     .gallery-item p {
@@ -123,52 +123,61 @@
       color: #bbb;
     }
 
-    /* MOBILE RESPONSIVE DESIGN */
-@media (max-width: 768px) {
+    /* =========================
+       Mobile Functionality
+       ========================= */
+    @media (max-width: 768px) {
 
-  /* Stack layout vertically */
-  .main-container {
-    flex-direction: column;
-    padding: 0 1rem;
-  }
+      .main-container {
+        flex-direction: column;
+        padding: 0 1rem;
+        margin: 1.5rem auto;
+      }
 
-  /* Sidebar full width */
-  .sidebar {
-    width: 100%;
-    margin-bottom: 2rem;
-  }
+      /* Sidebar becomes top menu */
+      .sidebar {
+        width: 100%;
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
 
-  /* Make gallery single column */
-  .gallery {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
+      .sidebar ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+      }
 
-  /* Bigger images for scrolling feel */
-  .gallery-item img {
-    width: 100%;
-    height: auto;
-  }
+      .sidebar li {
+        margin: 0;
+      }
 
-  /* NAVBAR FIX */
-  nav {
-    flex-wrap: wrap;
-    padding: 0.5rem;
-  }
+      /* vertical scroll layout */
+      .gallery {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
 
-  nav a {
-    margin: 0.5rem;
-    font-size: 0.9rem;
-  }
+      .gallery-item {
+        width: 100%;
+      }
 
-  /* TITLE scaling */
-  header h1 {
-    font-size: 2.2rem;
-  }
-}
+      nav a {
+        margin: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      header h1 {
+        font-size: 2.2rem;
+      }
+    }
+
   </style>
 </head>
+
 <body>
+
   <header>
     <h1>STUDIO ELLIPSIS</h1>
   </header>
@@ -177,14 +186,15 @@
     <a href="Art_Menu.html">ILLUSTRATION</a>
     <a href="Animations.html">ANIMATION</a>
     <a href="3D_Modeling.html">3D MODELING</a>
-    <a href="https://studioellipsis.org">MENU</a>
+    <a href="#">MENU</a>
   </nav>
 
   <div class="main-container">
+
     <aside class="sidebar">
-      <h3>ILLUSTRATIONS</h3>
+      <h3>PROJECTS</h3>
       <ul>
-        <li><a href="#">Logo Animation</a></li>
+        <li><a href="#">Hand of God</a></li>
         <li><a href="#">Eternity</a></li>
         <li><a href="#">Reborn</a></li>
         <li><a href="#">Martyr</a></li>
@@ -195,40 +205,47 @@
 
     <main class="gallery">
       <div class="gallery-item">
-        <a href="/Gallery/art1.html"><img src="/Gallery/Hand_of_God.png" alt="Artwork"></a>
+        <a href="#"><img src="/Gallery/Hand_of_God.png"></a>
+        <h4>Hand of God</h4>
+        <p>Graphite on paper</p>
+      </div>
+
+      <div class="gallery-item">
+        <a href="#"><img src="/Gallery/I saw eternity the other night.png"></a>
+        <h4>Eternity</h4>
+        <p>Graphite on paper</p>
+      </div>
+
+      <div class="gallery-item">
+        <a href="#"><img src="/Gallery/Reborn.png"></a>
         <h4>Reborn</h4>
         <p>Graphite on paper</p>
       </div>
+
       <div class="gallery-item">
-        <a href="/Gallery/art2.html"><img src="/Gallery/I saw eternity the other night.png" alt="Artwork"></a>
-        <h4>Reborn</h4>
-        <p>Graphite on paper</p>
-      </div>
-      <div class="gallery-item">
-        <a href="/Gallery/art3.html"><img src="/Gallery/Reborn.png" alt="Artwork"></a>
-        <h4>Reborn</h4>
-        <p>Graphite on paper</p>
-      </div>
-      <div class="gallery-item">
-        <a href="/Gallery/art4.html"><img src="/Gallery/Martyr.png" alt="Artwork"></a>
+        <a href="#"><img src="/Gallery/Martyr.png"></a>
         <h4>Martyr</h4>
         <p>Graphite on paper</p>
       </div>
+
       <div class="gallery-item">
-        <a href="/Gallery/art5.html"><img src="/Gallery/Cleanse.png" alt="Artwork"></a>
+        <a href="#"><img src="/Gallery/Cleanse.png"></a>
         <h4>Cleanse</h4>
         <p>Graphite on paper</p>
       </div>
+
       <div class="gallery-item">
-        <a href="/Gallery/art6.html"><img src="/Gallery/sainte_chappele.png" alt="Artwork"></a>
+        <a href="#"><img src="/Gallery/sainte_chappele.png"></a>
         <h4>Sainte Chappele</h4>
         <p>Graphite on paper</p>
       </div>
     </main>
+
   </div>
 
   <footer>
     &copy; 2025 Studio Ellipsis. All rights reserved.
   </footer>
+
 </body>
 </html>
