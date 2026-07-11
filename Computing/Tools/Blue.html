@@ -1,4 +1,4 @@
-<!-- Web Exploitation Dictionary page for the cybersecurity part of my website -->
+<!-- Linux Hardening Dictionary page for the cybersecurity part of my website -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -180,7 +180,7 @@
   <main>
     <p class="count">Type to filter. Click tags to narrow results.</p>
     <div class="bar">
-      <input id="q" type="search" placeholder="Search (e.g. Passwords, Vuln Scans, Cron Jobs)"/>
+      <input id="q" type="search" placeholder="Search (e.g. SSH, Firewall, Cron Jobs)"/>
       <div id="tagBar" class="tags"></div>
     </div>
 
@@ -194,50 +194,308 @@
 <script>
 const entries = [
   {
-    term: "Change Default Passwords",
-    tags: ["password","Password"],
-    what: "Password changes based on user",
-    checks: ["Check robots.txt, sitemap.xml","Enumerate dirs/files","Identify tech stack"],
-    steps: ["passwd- enter current password, then enter password you desire to change it to."],
-    notes: "Save everything for later."
+    term: "Initial System Recon",
+    tags: ["recon"],
+    what: "Before you change anything, inventory what's actually running so you know what normal looks like and can spot changes the red team makes later.",
+    checks: [
+      "whoami; id — confirm your current privilege level",
+      "cat /etc/passwd — list every local account",
+      "w; who -a — see who is logged in right now",
+      "ps auxf — full process tree",
+      "ss -tulnp — listening ports and the process that owns each one",
+      "systemctl list-units --type=service --state=running — running services",
+      "crontab -l; sudo crontab -l -u root — your own and root's scheduled jobs"
+    ],
+    steps: [
+      "Save a baseline you can diff against later:",
+      "ss -tulnp > ~/baseline-ports.txt",
+      "ps auxf > ~/baseline-procs.txt",
+      "systemctl list-units --type=service --state=running > ~/baseline-services.txt",
+      "Re-check later and diff: ss -tulnp | diff - ~/baseline-ports.txt"
+    ],
+    tools: ["ss", "ps", "systemctl", "w", "crontab"],
+    notes: "Do this in the first few minutes of the competition, before you touch anything — you need a clean before picture to recognize what the red team changes later."
   },
   {
-    term: "Enumeration",
-    tags: ["enumeration"],
-    what: ".",
-    checks: ["., .","./.","."],
-    steps: ["N/A (methodology)"],
-    tools: [".",".",".","."],
-    notes: "Enumeration"
+    term: "Secure User Accounts & Passwords",
+    tags: ["accounts"],
+    what: "Change every local account's password, not just root or your own login — a default or shared credential is the fastest way in for a red team.",
+    checks: [
+      "awk -F: '{print $1}' /etc/passwd — list every username",
+      "awk -F: '($3==0){print $1}' /etc/passwd — find any account with UID 0 besides root",
+      "sudo awk -F: '$2 ~ /^$/ {print $1}' /etc/shadow — find accounts with an empty password field"
+    ],
+    steps: [
+      "Change a password interactively: passwd [username]",
+      "Force a password change at next login for an account you must keep shared: chage -d 0 [username]",
+      "Lock an account you're not ready to delete yet: usermod -L [username]",
+      "Delete a confirmed-unauthorized account and its home directory: userdel -r [username]"
+    ],
+    tools: ["passwd", "chage", "usermod", "userdel"],
+    notes: "Change service-account passwords too, not just interactive logins — a stale default password on a database or app account is a classic CCDC foothold."
   },
   {
-    term: "Exploitation",
-    tags: ["exploitation"],
-    what: ".",
-    checks: ["., .","./.","."],
-    steps: ["N/A (methodology)"],
-    tools: [".",".",".","."],
-    notes: "Exploitation"
+    term: "Lock Down Sudo & Root Access",
+    tags: ["accounts", "permissions"],
+    what: "Limit who can become root and how, and remove standing privilege nobody needs.",
+    checks: [
+      "sudo cat /etc/sudoers; sudo ls /etc/sudoers.d/ — review sudo grants",
+      "getent group sudo — Debian/Ubuntu admin group membership",
+      "getent group wheel — RHEL/CentOS admin group membership",
+      "grep -E 'PermitRootLogin' /etc/ssh/sshd_config — check whether root can SSH in directly"
+    ],
+    steps: [
+      "Edit sudoers safely, never by hand: sudo visudo",
+      "Remove a user from the admin group (Debian/Ubuntu): sudo deluser [username] sudo",
+      "Remove a user from the admin group (RHEL/CentOS): sudo gpasswd -d [username] wheel",
+      "Search sudoers for NOPASSWD entries and remove them so sudo always prompts for a password"
+    ],
+    tools: ["visudo", "gpasswd", "deluser"],
+    notes: "Every extra sudoer is one more account the red team can compromise to own the whole box — keep the list to exactly who needs it."
   },
   {
-    term: "Initial Access",
-    tags: ["exploitation"],
-    what: ".",
-    checks: ["., .","./.","."],
-    steps: ["N/A (methodology)"],
-    tools: [".",".",".","."],
-    notes: "Initial Access"
+    term: "Harden SSH",
+    tags: ["ssh", "accounts"],
+    what: "SSH is the most common way both your team and the red team get into a box, so lock it down early — carefully.",
+    checks: [
+      "sudo sshd -T | grep -Ei 'permitrootlogin|passwordauthentication|port' — see the effective running config",
+      "sudo cat /etc/ssh/sshd_config"
+    ],
+    steps: [
+      "Edit the config: sudo nano /etc/ssh/sshd_config",
+      "Set PermitRootLogin no",
+      "Set PasswordAuthentication no only after confirming key-based login works for your whole team",
+      "Set PermitEmptyPasswords no and X11Forwarding no",
+      "Restrict logins to named accounts: AllowUsers teammate1 teammate2",
+      "Test the syntax before restarting: sudo sshd -t",
+      "Apply it: sudo systemctl restart sshd",
+      "Verify you can still connect from a second, separate terminal before closing your first session"
+    ],
+    tools: ["sshd_config", "systemctl"],
+    notes: "Always keep one working session open while you test a new config in a second session — a typo here can lock your entire team out of the box."
   },
   {
-    term: "Persistence",
-    tags: ["exploitation"],
-    what: ".",
-    checks: ["., .","./.","."],
-    steps: ["N/A (methodology)"],
-    tools: [".",".",".","."],
-    notes: "Presistence"
+    term: "Configure the Host Firewall",
+    tags: ["firewall", "network"],
+    what: "Only expose the ports your scored services actually need, and block everything else by default.",
+    checks: [
+      "sudo ufw status verbose — Debian/Ubuntu",
+      "sudo firewall-cmd --list-all — RHEL/CentOS",
+      "sudo iptables -L -n -v — raw iptables",
+      "ss -tulnp — confirm what's actually listening that needs to stay reachable"
+    ],
+    steps: [
+      "ufw (Debian/Ubuntu): sudo ufw default deny incoming",
+      "sudo ufw default allow outgoing",
+      "Allow only what's required: sudo ufw allow 22/tcp",
+      "sudo ufw allow 80/tcp",
+      "Turn it on: sudo ufw enable",
+      "firewalld (RHEL/CentOS): sudo firewall-cmd --set-default-zone=drop",
+      "sudo firewall-cmd --permanent --add-service=ssh --add-port=80/tcp",
+      "sudo firewall-cmd --reload",
+      "Raw iptables alternative: sudo iptables -P INPUT DROP, then add explicit -A INPUT accept rules for required ports, then persist with iptables-save"
+    ],
+    tools: ["ufw", "firewalld", "iptables"],
+    notes: "Confirm every scored service still answers from an external host right after you enable the firewall — locking out your own scored service costs the same points as a red-team takedown."
   },
-
+  {
+    term: "Disable Unnecessary Services",
+    tags: ["services"],
+    what: "Every running service is attack surface. If it isn't required for a scored service or team access, turn it off.",
+    checks: [
+      "systemctl list-units --type=service --state=running",
+      "systemctl list-unit-files --type=service --state=enabled"
+    ],
+    steps: [
+      "Stop it now: sudo systemctl stop [service]",
+      "Keep it from starting on reboot: sudo systemctl disable [service]",
+      "Fully block it from starting at all, even by script: sudo systemctl mask [service]"
+    ],
+    tools: ["systemctl"],
+    notes: "Check the scoring rubric before disabling anything — killing a service you're actually scored on costs more points than leaving a minor, unscored risk running."
+  },
+  {
+    term: "Patch the System",
+    tags: ["patching"],
+    what: "Known, unpatched CVEs are free wins for a red team, so update — in a controlled way.",
+    checks: [
+      "apt list --upgradable — Debian/Ubuntu",
+      "dnf check-update — RHEL/Fedora"
+    ],
+    steps: [
+      "Debian/Ubuntu: sudo apt update && sudo apt upgrade -y",
+      "RHEL/CentOS/Fedora: sudo dnf update -y",
+      "Only reboot if a kernel update needs it, and only after checking with your team: sudo reboot"
+    ],
+    tools: ["apt", "dnf", "yum"],
+    notes: "Retest your scored services immediately after patching — competition images sometimes pin package versions a service depends on, so a blind upgrade can break something on purpose."
+  },
+  {
+    term: "Audit File Permissions & SUID/SGID Binaries",
+    tags: ["permissions"],
+    what: "Misconfigured permissions and unnecessary SUID binaries are common privilege-escalation paths.",
+    checks: [
+      "find / -xdev -perm -4000 -type f 2>/dev/null — list SUID binaries",
+      "find / -xdev -perm -2000 -type f 2>/dev/null — list SGID binaries",
+      "find / -xdev -perm -0002 -type f 2>/dev/null — find world-writable files",
+      "find / -xdev -nouser 2>/dev/null — files with no owning user",
+      "find / -xdev -nogroup 2>/dev/null — files with no owning group"
+    ],
+    steps: [
+      "Remove an unnecessary SUID bit: sudo chmod u-s [file]",
+      "Remove an unnecessary SGID bit: sudo chmod g-s [file]",
+      "Fix a world-writable file: sudo chmod o-w [file]",
+      "Fix ownership on an orphaned file: sudo chown root:root [file]"
+    ],
+    tools: ["find", "chmod", "chown"],
+    notes: "Compare your SUID list against a known-good baseline from the same distro and version — an unfamiliar SUID binary that appears mid-competition is a strong persistence indicator."
+  },
+  {
+    term: "Enable Auditing & Centralized Logging",
+    tags: ["logging", "monitoring"],
+    what: "You can't catch what you don't log, and local-only logs are easy for an attacker with root to erase.",
+    checks: [
+      "systemctl status auditd",
+      "systemctl status rsyslog"
+    ],
+    steps: [
+      "Install if missing (Debian/Ubuntu): sudo apt install auditd -y",
+      "Install if missing (RHEL/CentOS): sudo dnf install audit -y",
+      "Enable and start it: sudo systemctl enable --now auditd",
+      "Watch for account changes: sudo auditctl -w /etc/passwd -p wa -k user-mod",
+      "Watch for SSH config changes: sudo auditctl -w /etc/ssh/sshd_config -p wa -k ssh-config",
+      "Review flagged events: sudo ausearch -k user-mod",
+      "If a second box or syslog server is available, forward logs off this host so an attacker can't erase them after getting root"
+    ],
+    tools: ["auditd", "auditctl", "ausearch", "rsyslog"],
+    notes: "Off-host logging is one of the best ways to catch a red-team pivot — local logs can be wiped the moment they get root."
+  },
+  {
+    term: "Hunt for Persistence Mechanisms",
+    tags: ["persistence"],
+    what: "Check every place malware or a red-teamer typically re-establishes access after you kick them out.",
+    checks: [
+      "sudo crontab -l -u root — root's cron jobs",
+      "for u in $(cut -f1 -d: /etc/passwd); do echo $u:; sudo crontab -l -u $u 2>/dev/null; done — every user's cron jobs",
+      "ls -la /etc/cron.d /etc/cron.daily /etc/cron.hourly",
+      "systemctl list-timers --all",
+      "cat /etc/rc.local 2>/dev/null",
+      "cat ~/.bashrc ~/.bash_profile /etc/profile.d/*.sh 2>/dev/null — look for injected commands",
+      "cat ~/.ssh/authorized_keys /root/.ssh/authorized_keys 2>/dev/null — look for keys you don't recognize",
+      "cat /etc/ld.so.preload 2>/dev/null — a classic LD_PRELOAD backdoor location"
+    ],
+    steps: [
+      "Remove any cron entry, systemd timer, or startup script your team can't account for",
+      "Strip unrecognized keys out of every authorized_keys file you find",
+      "Delete /etc/ld.so.preload if it exists and isn't something your team added"
+    ],
+    tools: ["crontab", "systemctl", "grep", "find"],
+    notes: "Do a full sweep right after your initial lockdown, then repeat it on a timer — this is exactly what the red team re-adds the moment they get back in."
+  },
+  {
+    term: "Scan for Rootkits & Malware",
+    tags: ["malware", "persistence"],
+    what: "A quick, standard scan catches known rootkits and backdoors fast, and gives you a clean baseline to compare against later.",
+    checks: [
+      "which rkhunter chkrootkit 2>/dev/null — see if scanners are already installed"
+    ],
+    steps: [
+      "Install (Debian/Ubuntu): sudo apt install rkhunter chkrootkit -y",
+      "Install (RHEL/CentOS, needs EPEL): sudo dnf install epel-release -y && sudo dnf install rkhunter -y",
+      "Update signatures: sudo rkhunter --update",
+      "Run a scan: sudo rkhunter --check --sk",
+      "Run the second scanner too: sudo chkrootkit"
+    ],
+    tools: ["rkhunter", "chkrootkit"],
+    notes: "Run this early to establish a clean baseline, then again periodically — a new warning mid-competition is worth investigating immediately rather than dismissing as a false positive."
+  },
+  {
+    term: "Harden Kernel & Network Parameters",
+    tags: ["kernel", "network"],
+    what: "A handful of sysctl settings close off common network-level attacks and information leaks.",
+    checks: [
+      "sysctl net.ipv4.ip_forward net.ipv4.tcp_syncookies kernel.randomize_va_space — check current values"
+    ],
+    steps: [
+      "Create /etc/sysctl.d/99-hardening.conf with:",
+      "net.ipv4.ip_forward = 0",
+      "net.ipv4.conf.all.accept_redirects = 0",
+      "net.ipv4.conf.all.send_redirects = 0",
+      "net.ipv4.conf.all.accept_source_route = 0",
+      "net.ipv4.tcp_syncookies = 1",
+      "net.ipv4.icmp_echo_ignore_broadcasts = 1",
+      "kernel.randomize_va_space = 2",
+      "Apply it without rebooting: sudo sysctl -p /etc/sysctl.d/99-hardening.conf"
+    ],
+    tools: ["sysctl"],
+    notes: "Skip ip_forward = 0 if the box genuinely needs to route traffic for a scored service — hardening that breaks required functionality is a self-inflicted point loss."
+  },
+  {
+    term: "File Integrity Monitoring",
+    tags: ["monitoring"],
+    what: "Build a cryptographic baseline of your filesystem so you can detect any file the red team modifies or plants.",
+    checks: [
+      "which aide 2>/dev/null — see if it's already installed"
+    ],
+    steps: [
+      "Install (Debian/Ubuntu): sudo apt install aide -y",
+      "Install (RHEL/CentOS): sudo dnf install aide -y",
+      "Initialize the database: sudo aideinit",
+      "Move the new database into place: sudo mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db",
+      "Check for changes any time: sudo aide --check"
+    ],
+    tools: ["aide"],
+    notes: "Build this baseline immediately after your initial cleanup, while you're confident the box is clean — a baseline taken after compromise is worthless."
+  },
+  {
+    term: "Brute-Force Protection",
+    tags: ["firewall", "monitoring"],
+    what: "Automatically ban IP addresses that hammer SSH or other login-based services.",
+    checks: [
+      "which fail2ban-client 2>/dev/null — see if it's already installed",
+      "sudo fail2ban-client status — list active jails"
+    ],
+    steps: [
+      "Install (Debian/Ubuntu): sudo apt install fail2ban -y",
+      "Install (RHEL/CentOS): sudo dnf install fail2ban -y",
+      "Copy the config so updates don't wipe your changes: sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local",
+      "Enable the sshd jail inside jail.local (set enabled = true under [sshd])",
+      "Start it: sudo systemctl enable --now fail2ban",
+      "Check banned IPs any time: sudo fail2ban-client status sshd"
+    ],
+    tools: ["fail2ban"],
+    notes: "Set a sane ban time and retry threshold — you don't want to accidentally lock out your own teammates or a legitimate scoring bot."
+  },
+  {
+    term: "Backup Before You Break Something",
+    tags: ["backup"],
+    what: "Snapshot configs before you change them so you can roll back fast if a hardening step breaks a scored service.",
+    checks: [
+      "ls -la /root/*backup* 2>/dev/null — see if you already have backups sitting around"
+    ],
+    steps: [
+      "Quick config backup before a risky change: sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak",
+      "Broader snapshot of key configs: sudo tar czf /root/etc-backup-$(date +%s).tar.gz /etc/ssh /etc/sudoers /etc/passwd /etc/shadow",
+      "List your backups so your team can find them fast under pressure: ls -la /root/*.bak /root/*backup*"
+    ],
+    tools: ["cp", "tar"],
+    notes: "This single habit saves more points than almost anything else on this list — a five-second backup before a risky change turns a scramble into a thirty-second rollback."
+  },
+  {
+    term: "Verify Scored Services After Every Change",
+    tags: ["verification"],
+    what: "Confirm every hardening step you make didn't take down the thing you're actually being graded on.",
+    checks: [
+      "ss -tulnp | grep [port] — confirm the service is still bound and listening locally"
+    ],
+    steps: [
+      "From another host, not the box itself, test reachability: curl -I http://[target-ip]",
+      "For a non-HTTP service: nc -zv [target-ip] [port]",
+      "If the competition provides a scoring or check script, re-run it after each change you make"
+    ],
+    tools: ["curl", "nc", "ss"],
+    notes: "Make this a reflex after every single step above, not a one-time check at the end — CCDC points are earned by services staying up as much as by keeping the red team out."
+  }
 ];
 
 const list = document.getElementById('list');
