@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Riley Owen —  Blue Teaming Dictionary</title>
+  <title>Linux Blue Teaming Dictionary</title>
   <style>
     body {
       margin: 0;
@@ -170,7 +170,7 @@
 </head>
 <body>
   <header>
-    <h1>Blue Teaming</h1>
+    <h1>Linux Blue Teaming</h1>
   </header>
 
   <nav>
@@ -180,7 +180,7 @@
   <main>
     <p class="count">Type to filter. Click tags to narrow results.</p>
     <div class="bar">
-      <input id="q" type="search" placeholder="Search (e.g. Recon, Exploit, Enumeration)"/>
+      <input id="q" type="search" placeholder="Search (e.g. Passwords, Vuln Scans, Cron Jobs)"/>
       <div id="tagBar" class="tags"></div>
     </div>
 
@@ -194,12 +194,11 @@
 <script>
 const entries = [
   {
-    term: "Recon",
-    tags: ["recon","Recon"],
-    what: "Initial asset discovery and surface mapping.",
+    term: "Change Default Passwords",
+    tags: ["password","Password"],
+    what: "Password changes based on user",
     checks: ["Check robots.txt, sitemap.xml","Enumerate dirs/files","Identify tech stack"],
-    payloads: ["N/A (methodology)"],
-    tools: ["curl","httpx","ffuf","nmap"],
+    steps: ["passwd- enter current password, then enter password you desire to change it to."],
     notes: "Save everything for later."
   },
   {
@@ -207,7 +206,7 @@ const entries = [
     tags: ["enumeration"],
     what: ".",
     checks: ["., .","./.","."],
-    payloads: ["N/A (methodology)"],
+    steps: ["N/A (methodology)"],
     tools: [".",".",".","."],
     notes: "Enumeration"
   },
@@ -216,7 +215,7 @@ const entries = [
     tags: ["exploitation"],
     what: ".",
     checks: ["., .","./.","."],
-    payloads: ["N/A (methodology)"],
+    steps: ["N/A (methodology)"],
     tools: [".",".",".","."],
     notes: "Exploitation"
   },
@@ -225,7 +224,7 @@ const entries = [
     tags: ["exploitation"],
     what: ".",
     checks: ["., .","./.","."],
-    payloads: ["N/A (methodology)"],
+    steps: ["N/A (methodology)"],
     tools: [".",".",".","."],
     notes: "Initial Access"
   },
@@ -234,7 +233,7 @@ const entries = [
     tags: ["exploitation"],
     what: ".",
     checks: ["., .","./.","."],
-    payloads: ["N/A (methodology)"],
+    steps: ["N/A (methodology)"],
     tools: [".",".",".","."],
     notes: "Presistence"
   },
@@ -263,7 +262,7 @@ function renderTags(){
 }
 
 function match(e, text){
-  const hay = (e.term+' '+e.what+' '+e.checks.join(' ')+' '+e.payloads.join(' ')+' '+e.tools.join(' ')+' '+e.tags.join(' ')).toLowerCase();
+  const hay = (e.term+' '+e.what+' '+e.checks.join(' ')+' '+e.steps.join(' ')+' '+e.tools.join(' ')+' '+e.tags.join(' ')).toLowerCase();
   return hay.includes(text.toLowerCase());
 }
 
@@ -289,8 +288,8 @@ function render(){
         <ul>${e.checks.map(c=>`<li>${c}</li>`).join('')}</ul>
       </details>
       <details>
-        <summary><strong>Starter Payloads</strong></summary>
-        <pre>${e.payloads.join('\n')}</pre>
+        <summary><strong>Steps</strong></summary>
+        <pre>${e.steps.join('\n')}</pre>
       </details>
       <details>
         <summary><strong>Tools</strong></summary>
